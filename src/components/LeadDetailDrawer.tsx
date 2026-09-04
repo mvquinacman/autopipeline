@@ -8,6 +8,7 @@ import { MarkLostDialog } from './MarkLostDialog';
 import { FinancingCalculatorModal } from './FinancingCalculatorModal';
 import { QuotationModal } from './QuotationModal';
 import { TestDriveModal } from './TestDriveModal';
+import { ViberScriptModal } from './ViberScriptModal';
 import {
   X,
   ChevronRight,
@@ -19,6 +20,7 @@ import {
   Calculator,
   FileText,
   Compass,
+  MessageSquare,
 } from 'lucide-react';
 
 interface LeadDetailDrawerProps {
@@ -42,6 +44,7 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
   const [showFinancingModal, setShowFinancingModal] = useState(false);
   const [showQuotationModal, setShowQuotationModal] = useState(false);
   const [showTestDriveModal, setShowTestDriveModal] = useState(false);
+  const [showViberModal, setShowViberModal] = useState(false);
   const [newNote, setNewNote] = useState('');
   const [isAddingNote, setIsAddingNote] = useState(false);
 
@@ -157,6 +160,18 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
       currentProfile.fullName,
       'test_drive',
       `Test drive booked on ${unitName} for ${new Date(date).toLocaleString()} (License: ${licenseNo})`
+    );
+    const refreshed = await leadService.getActivities(leadId);
+    setActivities(refreshed);
+  };
+
+  const handleLogOutreach = async (leadId: string, templateTitle: string) => {
+    await leadService.addActivity(
+      leadId,
+      currentProfile.id,
+      currentProfile.fullName,
+      'note',
+      `Sent Viber/SMS Outreach: "${templateTitle}"`
     );
     const refreshed = await leadService.getActivities(leadId);
     setActivities(refreshed);
@@ -305,7 +320,7 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
           {/* Showroom Deal Tools */}
           <div className="space-y-2">
             <span className="text-[10.5px] uppercase font-bold text-sub tracking-wider">Showroom Deal Tools</span>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               <button
                 type="button"
                 onClick={() => setShowFinancingModal(true)}
@@ -329,6 +344,14 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
               >
                 <Compass className="size-4 text-cobalt group-hover:scale-110 transition-transform" />
                 <span className="text-[11px] font-bold">Book Test Drive</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowViberModal(true)}
+                className="flex flex-col items-center justify-center p-2.5 rounded-control border border-line bg-wash hover:bg-line/60 text-ink text-center gap-1 transition-colors group"
+              >
+                <MessageSquare className="size-4 text-cobalt group-hover:scale-110 transition-transform" />
+                <span className="text-[11px] font-bold">Viber / SMS</span>
               </button>
             </div>
           </div>
@@ -366,6 +389,13 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
         lead={lead}
         onClose={() => setShowTestDriveModal(false)}
         onScheduleTestDrive={handleScheduleTestDrive}
+      />
+
+      <ViberScriptModal
+        isOpen={showViberModal}
+        lead={lead}
+        onClose={() => setShowViberModal(false)}
+        onLogOutreach={handleLogOutreach}
       />
     </div>
   );

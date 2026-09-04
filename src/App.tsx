@@ -13,7 +13,8 @@ import { FunnelAnalytics } from './components/FunnelAnalytics';
 import { QuickSearchBar } from './components/QuickSearchBar';
 import { KanbanBoard } from './components/KanbanBoard';
 import { leadService } from './services/leadService';
-import { Plus, Kanban, CalendarCheck, BarChart3, LayoutGrid } from 'lucide-react';
+import { exportLeadsToCsv } from './utils/csvExport';
+import { Plus, Kanban, CalendarCheck, BarChart3, LayoutGrid, Download } from 'lucide-react';
 
 type ViewMode = 'pipeline' | 'board' | 'follow_ups' | 'analytics';
 
@@ -117,6 +118,14 @@ export default function App() {
               profiles={profiles}
               onSelectProfile={setCurrentProfile}
             />
+            <button
+              type="button"
+              onClick={() => exportLeadsToCsv(filteredLeads, `autopipeline-leads-${currentProfile.role}.csv`)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-control text-xs font-semibold bg-wash hover:bg-line text-ink border border-line transition-colors"
+              title="Export filtered pipeline leads to CSV"
+            >
+              <Download className="size-3.5 text-sub" /> Export CSV
+            </button>
             <button
               type="button"
               onClick={() => setIsAddLeadOpen(true)}

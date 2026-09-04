@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import App from '../App';
 import { leadService } from '../services/leadService';
@@ -242,5 +242,49 @@ describe('AutoPipeline - End-to-End User Journey Verification', () => {
       expect(screen.queryByText('Schedule Showroom Test Drive')).not.toBeInTheDocument();
       expect(screen.getByText(/Test drive booked/i)).toBeInTheDocument();
     });
+  });
+
+  it('Journey 11: Viber outreach script modal generates customized scripts and logs event', async () => {
+    render(<App />);
+
+    // Open lead drawer
+    const leadCards = await screen.findAllByText('Toyota Fortuner 2.8 LTD');
+    fireEvent.click(leadCards[0]);
+
+    // Click Viber / SMS button
+    const viberBtn = await screen.findByRole('button', { name: /Viber \/ SMS/i });
+    fireEvent.click(viberBtn);
+
+    // Modal renders
+    expect(await screen.findByText(/Viber & SMS Outreach Script/i)).toBeInTheDocument();
+    expect(screen.getByText(/1\. Showroom Visit Follow-up/i)).toBeInTheDocument();
+
+    // Select financing promo template
+    const financeTemplateBtn = screen.getByRole('button', { name: /2\. Bank Loan Pre-Approval/i });
+    fireEvent.click(financeTemplateBtn);
+
+    // Click Log Outreach Event
+    const logBtn = screen.getByRole('button', { name: /Log Outreach Event/i });
+    fireEvent.click(logBtn);
+
+    // Modal closes and activity is logged to audit trail
+    await waitFor(() => {
+      expect(screen.queryByText(/Viber & SMS Outreach Script/i)).not.toBeInTheDocument();
+      expect(screen.getByText(/Sent Viber\/SMS Outreach: "Bank Financing Promotion"/i)).toBeInTheDocument();
+    });
+  });
+
+  it('Journey 12: CSV export button triggers file download for active role pipeline', async () => {
+    const mockCreateObjectURL = vi.fn().mockReturnValue('blob:mock-url');
+    window.URL.createObjectURL = mockCreateObjectURL;
+    const appendSpy = vi.spyOn(document.body, 'appendChild');
+
+    render(<App />);
+
+    const exportBtn = screen.getByRole('button', { name: /Export CSV/i });
+    fireEvent.click(exportBtn);
+
+    expect(mockCreateObjectURL).toHaveBeenCalled();
+    expect(appendSpy).toHaveBeenCalled();
   });
 });
