@@ -15,6 +15,8 @@ import { KanbanBoard } from './components/KanbanBoard';
 import { leadService } from './services/leadService';
 import { exportLeadsToCsv } from './utils/csvExport';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ToastProvider, useToast } from './context/ToastContext';
+import { LeadFilterSortStrip, type LeadFilter, type LeadSort } from './components/LeadFilterSortStrip';
 import { PermissionGate } from './components/auth/PermissionGate';
 import { AuthModal } from './components/auth/AuthModal';
 import { LandingPage } from './components/auth/LandingPage';
@@ -57,10 +59,13 @@ function AppContent() {
     openAuthModal,
     closeAuthModal,
   } = useAuth();
+  const { showToast } = useToast();
   const [currentView, setCurrentView] = useState<ViewMode>('pipeline');
   const [allLeads, setAllLeads] = useState<Lead[]>(SEED_LEADS);
   const [followUps, setFollowUps] = useState<FollowUpWithLead[]>([]);
   const [selectedStage, setSelectedStage] = useState<Stage | null>(null);
+  const [activeFilter, setActiveFilter] = useState<LeadFilter>('all');
+  const [activeSort, setActiveSort] = useState<LeadSort>('default');
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [matrixLead, setMatrixLead] = useState<Lead | null>(null);
   const [isAddLeadOpen, setIsAddLeadOpen] = useState(false);
@@ -80,9 +85,33 @@ function AppContent() {
   );
 
   const filteredLeads = useMemo(() => {
-    if (!selectedStage) return scopedLeads;
-    return scopedLeads.filter((l) => l.stage === selectedStage);
-  }, [scopedLeads, selectedStage]);
+    let list = scopedLeads;
+    if (selectedStage) {
+      list = list.filter((l) => l.stage === selectedStage);
+    }
+    if (activeFilter === 'overdue') {
+      list = list.filter((l) => l.urgency === 'overdue');
+    } else if (activeFilter === 'high_value') {
+      list = list.filter((l) => l.estValue >= 2_000_000);
+    } else if (activeFilter === 'test_drive') {
+      list = list.filter((l) => l.stage === 'test_drive');
+    } else if (activeFilter === 'financing') {
+      list = list.filter((l) => l.stage === 'application' || l.stage === 'approved');
+    }
+
+    if (activeSort === 'default') {
+      return list;
+    }
+
+    return [...list].sort((a, b) => {
+      if (activeSort === 'value_desc') return b.estValue - a.estValue;
+      if (activeSort === 'value_asc') return a.estValue - b.estValue;
+      if (activeSort === 'name_asc') return a.customerName.localeCompare(b.customerName);
+      if (activeSort === 'updated_desc') return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+      const urgencyWeight: Record<string, number> = { overdue: 0, due_today: 1, upcoming: 2, none: 3 };
+      return (urgencyWeight[a.urgency] ?? 3) - (urgencyWeight[b.urgency] ?? 3);
+    });
+  }, [scopedLeads, selectedStage, activeFilter, activeSort]);
 
   const loadFollowUps = useCallback(async () => {
     if (!currentProfile) return;
@@ -96,6 +125,12 @@ function AppContent() {
 
   const handleAdvance = async (leadId: string) => {
     if (!currentProfile) return;
+    const currentLead = allLeads.find((l) => l.id === leadId);
+    if (!currentLead) return;
+    const prevStage = currentLead.stage;
+    const prevStatus = currentLead.status;
+    const prevProbability = currentLead.probability;
+
     try {
       const updated = await leadService.advanceStage(
         leadId,
@@ -105,8 +140,38 @@ function AppContent() {
       );
       setAllLeads((prev) => prev.map((l) => (l.id === leadId ? updated : l)));
       if (selectedLead?.id === leadId) setSelectedLead(updated);
+
+      showToast({
+        message: `${currentLead.customerName} advanced to ${updated.stage.replace('_', ' ')}`,
+        type: 'success',
+        actionLabel: 'Undo',
+        undoAction: async () => {
+          const rolledBack = await leadService.updateLead(leadId, {
+            stage: prevStage,
+            status: prevStatus,
+            probability: prevProbability,
+          });
+          await leadService.addActivity(
+            leadId,
+            currentProfile.id,
+            currentProfile.fullName,
+            'stage_change',
+            `Reverted stage advancement back to ${prevStage.replace('_', ' ')}`
+          );
+          setAllLeads((prev) => prev.map((l) => (l.id === leadId ? rolledBack : l)));
+          if (selectedLead?.id === leadId) setSelectedLead(rolledBack);
+          showToast({
+            message: `Restored ${currentLead.customerName} back to ${prevStage.replace('_', ' ')}`,
+            type: 'info',
+          });
+        },
+      });
     } catch (err) {
       console.error('Failed to advance stage:', err);
+      showToast({
+        message: 'Failed to advance stage',
+        type: 'error',
+      });
     }
   };
 
@@ -123,10 +188,35 @@ function AppContent() {
 
   const handleCompleteFollowUp = async (id: string) => {
     if (!currentProfile) return;
+    const targetFollowUp = followUps.find((f) => f.id === id);
     await leadService.completeFollowUp(id, currentProfile.id, currentProfile.fullName);
     await loadFollowUps();
     const refreshed = await leadService.getLeads();
     setAllLeads(refreshed);
+
+    showToast({
+      message: 'Follow-up marked as completed',
+      type: 'success',
+      actionLabel: 'Undo',
+      undoAction: async () => {
+        if (targetFollowUp) {
+          await leadService.rescheduleFollowUp(
+            id,
+            targetFollowUp.dueDate,
+            currentProfile.id,
+            currentProfile.fullName,
+            'Undo completed status'
+          );
+          await loadFollowUps();
+          const refreshedAfterUndo = await leadService.getLeads();
+          setAllLeads(refreshedAfterUndo);
+          showToast({
+            message: 'Follow-up restored to pending',
+            type: 'info',
+          });
+        }
+      },
+    });
   };
 
   const handleRescheduleFollowUp = async (id: string, newDate: string) => {
@@ -249,9 +339,27 @@ function AppContent() {
                   </span>
                 </h2>
               </div>
+
+              <LeadFilterSortStrip
+                activeFilter={activeFilter}
+                onSelectFilter={setActiveFilter}
+                activeSort={activeSort}
+                onSelectSort={setActiveSort}
+                totalCount={scopedLeads.length}
+                filteredCount={filteredLeads.length}
+                onReset={() => {
+                  setActiveFilter('all');
+                  setActiveSort('default');
+                  setSelectedStage(null);
+                }}
+              />
+
               <LeadsList
                 leads={filteredLeads}
-                onClearFilter={() => setSelectedStage(null)}
+                onClearFilter={() => {
+                  setSelectedStage(null);
+                  setActiveFilter('all');
+                }}
                 onAdvanceStage={handleAdvance}
                 onSelectLead={(l) => setSelectedLead(l)}
               />
@@ -517,7 +625,9 @@ function AppContent() {
 export default function App() {
   return (
     <AuthProvider>
-      <AppContent />
+      <ToastProvider>
+        <AppContent />
+      </ToastProvider>
     </AuthProvider>
   );
 }
