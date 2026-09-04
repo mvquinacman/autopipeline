@@ -49,7 +49,7 @@ export function QuickSearchBar({ leads, onSelectLead }: QuickSearchBarProps) {
   };
 
   return (
-    <div className="relative w-full max-w-xs sm:max-w-sm">
+    <div className="relative w-full">
       <div className="relative flex items-center">
         <Search className="absolute left-3 size-3.5 text-sub pointer-events-none" />
         <input
@@ -62,7 +62,7 @@ export function QuickSearchBar({ leads, onSelectLead }: QuickSearchBarProps) {
             setIsOpen(true);
           }}
           placeholder="Search customer, phone, model..."
-          className="w-full h-8 pl-8 pr-12 rounded-control border border-line bg-card text-xs text-ink placeholder:text-sub focus:ring-1 focus:ring-cobalt focus:border-cobalt focus:outline-none transition-all"
+          className="w-full h-9 pl-9 pr-12 rounded-control border border-line bg-card text-xs text-ink placeholder:text-sub focus:border-cobalt focus:outline-none transition-all shadow-sm"
         />
         {query ? (
           <button

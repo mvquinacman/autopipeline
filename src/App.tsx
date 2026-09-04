@@ -123,28 +123,25 @@ function AppContent() {
     <main className="min-h-screen bg-paper text-ink p-4 sm:p-6 pb-24 md:pb-6 font-sans">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Dealership Header */}
-        <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-line pb-4">
-          <div className="flex items-center gap-3">
-            <div className="size-10 rounded-control bg-cobalt text-white flex items-center justify-center font-display font-bold text-xl tracking-wider shrink-0">
+        <header className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-6 border-b border-line pb-4">
+          <div className="flex items-center gap-3 shrink-0">
+            <div className="size-10 rounded-control bg-cobalt text-white flex items-center justify-center font-display font-bold text-xl tracking-wider shrink-0 shadow-sm">
               AP
             </div>
             <div>
-              <h1 className="font-display text-2xl font-bold tracking-tight text-ink">AutoPipeline</h1>
+              <h1 className="font-display text-2xl font-bold tracking-tight text-ink leading-tight">AutoPipeline</h1>
               <p className="text-xs text-sub font-medium">Metro Manila Motors — BGC Showroom</p>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+          <div className="w-full md:flex-1 md:max-w-md md:mx-auto">
             <QuickSearchBar
               leads={scopedLeads}
               onSelectLead={(l) => setSelectedLead(l)}
             />
-            <RoleSwitcher
-              currentProfile={currentProfile}
-              profiles={profiles}
-              onSelectProfile={(p) => switchProfile(p.id)}
-              onOpenAuthModal={openAuthModal}
-            />
+          </div>
+
+          <div className="flex items-center gap-2 sm:gap-2.5 shrink-0 justify-end flex-wrap sm:flex-nowrap">
             <PermissionGate permission="lead:export">
               <button
                 type="button"
@@ -153,7 +150,7 @@ function AppContent() {
                 title="Export filtered pipeline leads to CSV"
               >
                 <Download className="size-3.5 text-sub" />
-                <span className="hidden sm:inline">Export CSV</span>
+                <span className="hidden xl:inline">Export CSV</span>
               </button>
             </PermissionGate>
             <button
@@ -161,8 +158,16 @@ function AppContent() {
               onClick={() => setIsAddLeadOpen(true)}
               className="hidden md:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-control text-xs font-bold bg-cobalt hover:bg-cobalt-press text-white shadow-sm transition-colors min-h-[36px]"
             >
-              <Plus className="size-4" /> Add Lead
+              <Plus className="size-4" />
+              <span>Add Lead</span>
             </button>
+            <div className="hidden sm:block h-6 w-px bg-line mx-0.5" />
+            <RoleSwitcher
+              currentProfile={currentProfile}
+              profiles={profiles}
+              onSelectProfile={(p) => switchProfile(p.id)}
+              onOpenAuthModal={openAuthModal}
+            />
             <button
               type="button"
               onClick={logout}
