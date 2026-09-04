@@ -5,6 +5,7 @@ import { leadService } from '../services/leadService';
 import { tradeInService } from '../services/tradeInService';
 import { authService } from '../services/authService';
 import { upSystemService } from '../services/upSystemService';
+import { inventoryService } from '../services/inventoryService';
 
 describe('AutoPipeline - End-to-End User Journey Verification', () => {
   beforeEach(() => {
@@ -12,6 +13,7 @@ describe('AutoPipeline - End-to-End User Journey Verification', () => {
     leadService.resetMockStore();
     tradeInService.resetMockStore();
     upSystemService.resetMockStore();
+    inventoryService.resetMockStore();
   });
 
   it('Journey 1: Dealership shell renders and enforces role-based scoping ladder', async () => {
@@ -492,5 +494,75 @@ describe('AutoPipeline - End-to-End User Journey Verification', () => {
 
     // Paolo Morales is returned to the queue
     expect(screen.getAllByText('Paolo Morales').length).toBeGreaterThan(0);
+  });
+
+  it('Journey 17: Vehicle Stock Matrix tracks fleet inventory, filters aged units, and allocates 48-hour VIN hold in Lead Drawer', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    render(<App />);
+    const mainNav = screen.getByRole('navigation', { name: /Main Navigation/i });
+
+    // 1. Navigate to Stock Matrix tab
+    const stockTab = within(mainNav).getByRole('button', { name: /Stock Matrix/i });
+    fireEvent.click(stockTab);
+
+    // Stock Matrix view renders
+    expect(await screen.findByRole('heading', { name: /Vehicle Stock Matrix/i })).toBeInTheDocument();
+    expect(screen.getByText('Total Inventory')).toBeInTheDocument();
+    expect(screen.getByText('Available In-Stock')).toBeInTheDocument();
+    expect(screen.getByText('48-Hr Holds')).toBeInTheDocument();
+
+    // 2. Filter by Aged Stock (>60d)
+    const agedTab = screen.getByRole('button', { name: /Aged Stock/i });
+    fireEvent.click(agedTab);
+
+    expect(screen.getByText('Vios 1.5 G')).toBeInTheDocument();
+    expect(screen.getByText(/68d on lot/i)).toBeInTheDocument();
+
+    // 3. Navigate back to Pipeline tab
+    const pipelineTab = within(mainNav).getByRole('button', { name: /Pipeline/i });
+    fireEvent.click(pipelineTab);
+    expect(await screen.findByText('All Scoped Leads')).toBeInTheDocument();
+
+    // 4. Open Maria Santos lead drawer (Fortuner 2.8 LTD)
+    const leadCards = await screen.findAllByText('Toyota Fortuner 2.8 LTD');
+    fireEvent.click(leadCards[0]);
+    expect(await screen.findByText('Lead Inspector')).toBeInTheDocument();
+
+    // Vehicle stock card starts unallocated
+    expect(screen.getByText(/Vehicle Stock & 48-Hr Hold/i)).toBeInTheDocument();
+    expect(screen.getByText(/NO VIN ALLOCATED/i)).toBeInTheDocument();
+
+    // 5. Open Allocate VIN / Hold modal
+    const allocateBtn = screen.getByRole('button', { name: /Allocate VIN \/ Hold/i });
+    fireEvent.click(allocateBtn);
+
+    const modalHeading = await screen.findByRole('heading', { name: /Allocate VIN & 48-Hour Hold/i });
+    const modal = modalHeading.closest('div.bg-card') as HTMLElement;
+    expect(within(modal).getByText(/Platinum White Pearl/i)).toBeInTheDocument();
+
+    // Select the Platinum White Pearl Fortuner
+    const unitOption = within(modal).getByText(/Platinum White Pearl/i);
+    fireEvent.click(unitOption);
+
+    // Confirm hold
+    const confirmBtn = within(modal).getByRole('button', { name: /Confirm 48-Hr Hold & Allocate/i });
+    fireEvent.click(confirmBtn);
+
+    await waitFor(() => {
+      expect(screen.queryByRole('heading', { name: /Allocate VIN & 48-Hour Hold/i })).not.toBeInTheDocument();
+    });
+
+    // 6. Verify drawer now reflects active hold
+    expect(screen.getByText(/48-HR HOLD ACTIVE/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/VIN: MR0BA3CD4P1000001/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/Deposit: ₱20,000/i).length).toBeGreaterThanOrEqual(1);
+
+    // 7. Release hold
+    const releaseBtn = screen.getByRole('button', { name: /Release Hold/i });
+    fireEvent.click(releaseBtn);
+
+    await waitFor(() => {
+      expect(screen.getByText(/NO VIN ALLOCATED/i)).toBeInTheDocument();
+    });
   });
 });

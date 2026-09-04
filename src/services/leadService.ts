@@ -365,6 +365,29 @@ export const leadService = {
   },
 
   /**
+   * Updates arbitrary fields on a lead (e.g. vehicle allocation, trade-in, etc.)
+   */
+  async updateLead(
+    leadId: string,
+    updates: Partial<Lead>
+  ): Promise<Lead> {
+    const leadIndex = inMemoryLeads.findIndex((l) => l.id === leadId);
+    if (leadIndex === -1) {
+      throw new Error(`Lead ${leadId} not found`);
+    }
+
+    const currentLead = inMemoryLeads[leadIndex];
+    const updated: Lead = {
+      ...currentLead,
+      ...updates,
+      updatedAt: new Date().toISOString(),
+    };
+
+    inMemoryLeads[leadIndex] = updated;
+    return updated;
+  },
+
+  /**
    * Creates a new lead with validation and activity logging
    */
   async createLead(

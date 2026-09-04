@@ -52,6 +52,10 @@ export interface Lead {
   urgency: Urgency;
   tradeInId?: string;
   netTradeInEquity?: number;
+  allocatedVehicleId?: string;
+  allocatedVin?: string;
+  reservationDeposit?: number;
+  reservationExpiresAt?: string;
   createdAt: string;
   updatedAt: string;
 }

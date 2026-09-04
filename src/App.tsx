@@ -18,9 +18,10 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { PermissionGate } from './components/auth/PermissionGate';
 import { AuthModal } from './components/auth/AuthModal';
 import { FloorBoardView } from './components/FloorBoardView';
-import { Plus, Kanban, CalendarCheck, BarChart3, LayoutGrid, Download, Users } from 'lucide-react';
+import { InventoryMatrixView } from './components/InventoryMatrixView';
+import { Plus, Kanban, CalendarCheck, BarChart3, LayoutGrid, Download, Users, Boxes } from 'lucide-react';
 
-type ViewMode = 'pipeline' | 'board' | 'follow_ups' | 'floor' | 'analytics';
+type ViewMode = 'pipeline' | 'board' | 'follow_ups' | 'floor' | 'inventory' | 'analytics';
 
 function AppContent() {
   const {
@@ -195,6 +196,15 @@ function AppContent() {
           </button>
           <button
             type="button"
+            onClick={() => setCurrentView('inventory')}
+            className={`px-3 py-1.5 rounded-control text-xs font-bold transition-colors flex items-center gap-1.5 ${
+              currentView === 'inventory' ? 'bg-cobalt text-white shadow-sm' : 'bg-wash text-ink hover:bg-line'
+            }`}
+          >
+            <Boxes className="size-3.5" /> Stock Matrix
+          </button>
+          <button
+            type="button"
             onClick={() => setCurrentView('analytics')}
             className={`px-3 py-1.5 rounded-control text-xs font-bold transition-colors flex items-center gap-1.5 ${
               currentView === 'analytics' ? 'bg-cobalt text-white shadow-sm' : 'bg-wash text-ink hover:bg-line'
@@ -278,6 +288,10 @@ function AppContent() {
           <FloorBoardView />
         )}
 
+        {currentView === 'inventory' && (
+          <InventoryMatrixView />
+        )}
+
         {currentView === 'analytics' && (
           <FunnelAnalytics leads={scopedLeads} />
         )}
@@ -357,6 +371,16 @@ function AppContent() {
         >
           <Users className="size-5" />
           <span className="text-[10px] uppercase font-bold mt-1">Floor</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setCurrentView('inventory')}
+          className={`flex-1 flex flex-col items-center justify-center py-1 transition-colors ${
+            currentView === 'inventory' ? 'text-cobalt font-bold' : 'text-sub hover:text-ink'
+          }`}
+        >
+          <Boxes className="size-5" />
+          <span className="text-[10px] uppercase font-bold mt-1">Stock</span>
         </button>
         <button
           type="button"

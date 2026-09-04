@@ -12,6 +12,9 @@ import { QuotationModal } from './QuotationModal';
 import { TestDriveModal } from './TestDriveModal';
 import { ViberScriptModal } from './ViberScriptModal';
 import { TradeInModal } from './TradeInModal';
+import { AllocateVehicleModal } from './AllocateVehicleModal';
+import { inventoryService } from '../services/inventoryService';
+import type { VehicleStock } from '../types/inventory';
 import { PermissionGate } from './auth/PermissionGate';
 import {
   X,
@@ -26,6 +29,9 @@ import {
   Compass,
   MessageSquare,
   Repeat,
+  Boxes,
+  Lock,
+  Unlock,
 } from 'lucide-react';
 
 interface LeadDetailDrawerProps {
@@ -51,12 +57,21 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
   const [showTestDriveModal, setShowTestDriveModal] = useState(false);
   const [showViberModal, setShowViberModal] = useState(false);
   const [showTradeInModal, setShowTradeInModal] = useState(false);
+  const [showAllocateModal, setShowAllocateModal] = useState(false);
   const [newNote, setNewNote] = useState('');
   const [isAddingNote, setIsAddingNote] = useState(false);
 
   const tradeInRecord = useMemo(() => {
     if (!lead) return null;
     return tradeInService.getAppraisalByLead(lead.id);
+  }, [lead, activities]);
+
+  const allocatedVehicle = useMemo(() => {
+    if (!lead) return null;
+    return (
+      inventoryService.getInventory().find((v) => v.allocatedLeadId === lead.id) ||
+      (lead.allocatedVehicleId ? inventoryService.getVehicleById(lead.allocatedVehicleId) : null)
+    );
   }, [lead, activities]);
 
   useEffect(() => {
@@ -145,6 +160,57 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
     onLeadUpdated(updated);
     const refreshed = await leadService.getActivities(lead.id);
     setActivities(refreshed);
+  };
+
+  const handleVehicleAllocated = async (vehicle: VehicleStock) => {
+    if (!lead) return;
+    const updated = await leadService.updateLead(lead.id, {
+      allocatedVehicleId: vehicle.id,
+      allocatedVin: vehicle.vin,
+      reservationDeposit: vehicle.reservationDeposit,
+      reservationExpiresAt: vehicle.reservationExpiresAt,
+    });
+    await leadService.addActivity(
+      lead.id,
+      currentProfile.id,
+      currentProfile.fullName,
+      'quote',
+      `Placed 48-hr reservation hold on ${vehicle.model} (${vehicle.variant}, VIN: ${vehicle.vin}, Color: ${vehicle.color}). Deposit: ₱${vehicle.reservationDeposit?.toLocaleString()}.`
+    );
+    if (updated) {
+      onLeadUpdated(updated);
+    }
+    const refreshed = await leadService.getActivities(lead.id);
+    setActivities(refreshed);
+  };
+
+  const handleReleaseVehicleHold = async () => {
+    if (!lead || !allocatedVehicle) return;
+    if (
+      window.confirm(
+        `Release 48-hour reservation hold on VIN ${allocatedVehicle.vin}? The unit will return to available stock.`
+      )
+    ) {
+      inventoryService.releaseHold(allocatedVehicle.id, 'Hold released from lead detail drawer');
+      const updated = await leadService.updateLead(lead.id, {
+        allocatedVehicleId: undefined,
+        allocatedVin: undefined,
+        reservationDeposit: undefined,
+        reservationExpiresAt: undefined,
+      });
+      await leadService.addActivity(
+        lead.id,
+        currentProfile.id,
+        currentProfile.fullName,
+        'note',
+        `Released 48-hr reservation hold on ${allocatedVehicle.model} (VIN: ${allocatedVehicle.vin}). Unit returned to available stock.`
+      );
+      if (updated) {
+        onLeadUpdated(updated);
+      }
+      const refreshed = await leadService.getActivities(lead.id);
+      setActivities(refreshed);
+    }
   };
 
   const handleSaveFinancingQuote = async (leadId: string, note: string) => {
@@ -261,6 +327,75 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
                 </select>
               </div>
             </PermissionGate>
+          </div>
+
+          {/* Vehicle Stock Allocation & 48-Hour Reservation Card */}
+          <div className="bg-paper border border-line rounded-control p-3 space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Boxes className="size-4 text-cobalt shrink-0" />
+                <span className="text-xs font-bold text-ink">
+                  Vehicle Stock &amp; 48-Hr Hold
+                </span>
+              </div>
+              {allocatedVehicle ? (
+                <span className="text-[10px] font-bold text-due bg-due/10 px-2 py-0.5 rounded-full border border-due/20 flex items-center gap-1">
+                  <Lock className="size-3" /> 48-HR HOLD ACTIVE
+                </span>
+              ) : (
+                <span className="text-[10px] font-semibold text-sub bg-wash px-2 py-0.5 rounded-full border border-line">
+                  NO VIN ALLOCATED
+                </span>
+              )}
+            </div>
+
+            {allocatedVehicle ? (
+              <div className="space-y-2 pt-1 border-t border-line">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <h4 className="text-xs font-bold text-ink">{allocatedVehicle.model}</h4>
+                    <p className="text-[11px] text-sub">
+                      {allocatedVehicle.variant} • {allocatedVehicle.color}
+                    </p>
+                    <p className="font-mono text-[10.5px] uppercase font-bold text-cobalt mt-0.5">
+                      VIN: {allocatedVehicle.vin}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-xs font-bold text-ink tabular-nums block">
+                      {formatPeso(allocatedVehicle.msrp)}
+                    </span>
+                    <span className="text-[10px] text-sub font-semibold">
+                      Deposit: {formatPeso(allocatedVehicle.reservationDeposit || 20_000)}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between text-[11px] text-sub pt-1 border-t border-line/60">
+                  <span>
+                    Location: <strong className="text-ink">{allocatedVehicle.lotLocation}</strong>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleReleaseVehicleHold}
+                    className="text-sub hover:text-overdue font-semibold inline-flex items-center gap-1 transition-colors"
+                  >
+                    <Unlock className="size-3" /> Release Hold
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between pt-1 border-t border-line">
+                <span className="text-xs text-sub">No physical stock unit locked</span>
+                <button
+                  type="button"
+                  onClick={() => setShowAllocateModal(true)}
+                  className="px-2.5 py-1 text-xs font-bold bg-cobalt hover:bg-cobalt-press text-white rounded-control shadow-sm transition-colors"
+                >
+                  Allocate VIN / Hold
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Trade-In Vehicle Appraisal Card (if appraised) */}
@@ -389,7 +524,7 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
           {/* Showroom Deal Tools */}
           <div className="space-y-2">
             <span className="text-[10.5px] uppercase font-bold text-sub tracking-wider">Showroom Deal Tools</span>
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
               <button
                 type="button"
                 onClick={() => setShowFinancingModal(true)}
@@ -429,6 +564,14 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
               >
                 <MessageSquare className="size-4 text-cobalt group-hover:scale-110 transition-transform" />
                 <span className="text-[11px] font-bold">Viber / SMS</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowAllocateModal(true)}
+                className="flex flex-col items-center justify-center p-2.5 rounded-control border border-line bg-wash hover:bg-line/60 text-ink text-center gap-1 transition-colors group"
+              >
+                <Boxes className="size-4 text-cobalt group-hover:scale-110 transition-transform" />
+                <span className="text-[11px] font-bold">Allocate VIN</span>
               </button>
             </div>
           </div>
@@ -480,6 +623,13 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
         lead={lead}
         onClose={() => setShowViberModal(false)}
         onLogOutreach={handleLogOutreach}
+      />
+
+      <AllocateVehicleModal
+        isOpen={showAllocateModal}
+        lead={lead}
+        onClose={() => setShowAllocateModal(false)}
+        onAllocated={handleVehicleAllocated}
       />
     </div>
   );
