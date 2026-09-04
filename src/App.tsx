@@ -26,7 +26,7 @@ import { ServiceDriveView } from './components/ServiceDriveView';
 import { DeliveryBayView } from './components/DeliveryBayView';
 import { CommissionsView } from './components/CommissionsView';
 import { SocialIntakeView } from './components/SocialIntakeView';
-import { Sidebar } from './components/navigation/Sidebar';
+import { TopNav } from './components/navigation/TopNav';
 import type { ViewMode } from './components/navigation/navItems';
 import {
   Plus,
@@ -58,7 +58,6 @@ function AppContent() {
     closeAuthModal,
   } = useAuth();
   const [currentView, setCurrentView] = useState<ViewMode>('pipeline');
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [allLeads, setAllLeads] = useState<Lead[]>(SEED_LEADS);
   const [followUps, setFollowUps] = useState<FollowUpWithLead[]>([]);
   const [selectedStage, setSelectedStage] = useState<Stage | null>(null);
@@ -143,90 +142,83 @@ function AppContent() {
   }
 
   return (
-    <div className="min-h-screen bg-paper text-ink font-sans flex flex-col md:flex-row">
-      {/* Collapsible Left Sidebar (Desktop/Tablet) */}
-      <Sidebar
+    <div className="min-h-screen bg-paper text-ink p-4 sm:p-6 pb-24 md:pb-8 font-sans max-w-7xl mx-auto space-y-6">
+      {/* Dealership Header */}
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-6 border-b border-line pb-4">
+        <div className="flex items-center gap-3 shrink-0">
+          <div className="size-10 rounded-control bg-cobalt text-white flex items-center justify-center font-display font-bold text-xl tracking-wider shrink-0 shadow-sm">
+            AP
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="font-display text-2xl font-bold tracking-tight text-ink leading-tight">
+                AutoPipeline
+              </h1>
+              <span className="text-sub/40 hidden sm:inline">•</span>
+              <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-wash text-sub border border-line capitalize">
+                {currentView.replace('_', ' ')}
+              </span>
+            </div>
+            <p className="text-xs text-sub font-medium">Metro Manila Motors — BGC Showroom</p>
+          </div>
+        </div>
+
+        <div className="w-full md:flex-1 md:max-w-md md:mx-auto">
+          <QuickSearchBar
+            leads={scopedLeads}
+            onSelectLead={(l) => setSelectedLead(l)}
+          />
+        </div>
+
+        <div className="flex items-center gap-2 sm:gap-2.5 shrink-0 justify-end flex-wrap sm:flex-nowrap">
+          <PermissionGate permission="lead:export">
+            <button
+              type="button"
+              onClick={() => exportLeadsToCsv(filteredLeads, `autopipeline-leads-${currentProfile.role}.csv`)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-control text-xs font-semibold bg-wash hover:bg-line text-ink border border-line transition-colors min-h-[36px]"
+              title="Export filtered pipeline leads to CSV"
+            >
+              <Download className="size-3.5 text-sub" />
+              <span className="hidden xl:inline">Export CSV</span>
+            </button>
+          </PermissionGate>
+          <button
+            type="button"
+            onClick={() => setIsAddLeadOpen(true)}
+            className="hidden md:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-control text-xs font-bold bg-cobalt hover:bg-cobalt-press text-white shadow-sm transition-colors min-h-[36px]"
+          >
+            <Plus className="size-4" />
+            <span>Add Lead</span>
+          </button>
+          <div className="hidden sm:block h-6 w-px bg-line mx-0.5" />
+          <RoleSwitcher
+            currentProfile={currentProfile}
+            profiles={profiles}
+            onSelectProfile={(p) => switchProfile(p.id)}
+            onOpenAuthModal={openAuthModal}
+          />
+          <button
+            type="button"
+            onClick={logout}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-control text-xs font-semibold bg-wash hover:bg-line text-sub hover:text-overdue border border-line transition-colors min-h-[36px]"
+            title="Sign Out / Lock Terminal"
+            aria-label="Sign Out / Lock Terminal"
+          >
+            <LogOut className="size-3.5" />
+            <span className="hidden sm:inline">Sign Out</span>
+          </button>
+        </div>
+      </header>
+
+      {/* Main Top Navigation (Deal Desks Dropdown & Segmented Switcher) */}
+      <TopNav
         currentView={currentView}
         onSelectView={setCurrentView}
         overdueCount={kpis.overdueFollowUpsCount}
-        isCollapsed={isSidebarCollapsed}
-        onToggleCollapse={() => setIsSidebarCollapsed((prev) => !prev)}
       />
 
-      {/* Main Workspace Area */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Dealership Header */}
-        <header className="sticky top-0 z-20 bg-paper/95 backdrop-blur-sm border-b border-line px-4 sm:px-6 py-3.5 flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-6">
-          <div className="flex items-center gap-3 shrink-0">
-            <div className="md:hidden size-9 rounded-control bg-cobalt text-white flex items-center justify-center font-display font-bold text-lg tracking-wider shrink-0 shadow-sm">
-              AP
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="font-display text-2xl font-bold tracking-tight text-ink leading-tight">
-                  AutoPipeline
-                </h1>
-                <span className="text-sub/40 hidden sm:inline">•</span>
-                <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-wash text-sub border border-line capitalize">
-                  {currentView.replace('_', ' ')}
-                </span>
-              </div>
-              <p className="text-xs text-sub font-medium">Metro Manila Motors — BGC Showroom</p>
-            </div>
-          </div>
-
-          <div className="w-full md:flex-1 md:max-w-md md:mx-auto">
-            <QuickSearchBar
-              leads={scopedLeads}
-              onSelectLead={(l) => setSelectedLead(l)}
-            />
-          </div>
-
-          <div className="flex items-center gap-2 sm:gap-2.5 shrink-0 justify-end flex-wrap sm:flex-nowrap">
-            <PermissionGate permission="lead:export">
-              <button
-                type="button"
-                onClick={() => exportLeadsToCsv(filteredLeads, `autopipeline-leads-${currentProfile.role}.csv`)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-control text-xs font-semibold bg-wash hover:bg-line text-ink border border-line transition-colors min-h-[36px]"
-                title="Export filtered pipeline leads to CSV"
-              >
-                <Download className="size-3.5 text-sub" />
-                <span className="hidden xl:inline">Export CSV</span>
-              </button>
-            </PermissionGate>
-            <button
-              type="button"
-              onClick={() => setIsAddLeadOpen(true)}
-              className="hidden md:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-control text-xs font-bold bg-cobalt hover:bg-cobalt-press text-white shadow-sm transition-colors min-h-[36px]"
-            >
-              <Plus className="size-4" />
-              <span>Add Lead</span>
-            </button>
-            <div className="hidden sm:block h-6 w-px bg-line mx-0.5" />
-            <RoleSwitcher
-              currentProfile={currentProfile}
-              profiles={profiles}
-              onSelectProfile={(p) => switchProfile(p.id)}
-              onOpenAuthModal={openAuthModal}
-            />
-            <button
-              type="button"
-              onClick={logout}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-control text-xs font-semibold bg-wash hover:bg-line text-sub hover:text-overdue border border-line transition-colors min-h-[36px]"
-              title="Sign Out / Lock Terminal"
-              aria-label="Sign Out / Lock Terminal"
-            >
-              <LogOut className="size-3.5" />
-              <span className="hidden sm:inline">Sign Out</span>
-            </button>
-          </div>
-        </header>
-
-        {/* Scrollable Main Workspace */}
-        <main className="flex-1 p-4 sm:p-6 pb-24 md:pb-8 max-w-7xl w-full mx-auto space-y-6">
-
-        {/* KPI Strip */}
-        <KpiStrip kpis={kpis} />
+      {/* KPI Strip */}
+      <KpiStrip kpis={kpis} />
 
         {/* Manager Leaderboard (for Manager/Principal roles) */}
         {currentProfile.role !== 'agent' && (
@@ -358,8 +350,6 @@ function AppContent() {
         {currentView === 'analytics' && (
           <FunnelAnalytics leads={scopedLeads} />
         )}
-      </main>
-    </div>
 
       <LeadDetailDrawer
         lead={selectedLead}
