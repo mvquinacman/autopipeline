@@ -15,6 +15,8 @@ import { TradeInModal } from './TradeInModal';
 import { AllocateVehicleModal } from './AllocateVehicleModal';
 import { inventoryService } from '../services/inventoryService';
 import type { VehicleStock } from '../types/inventory';
+import { MultiBankMatrixModal } from './MultiBankMatrixModal';
+import { multiBankService } from '../services/multiBankService';
 import { PermissionGate } from './auth/PermissionGate';
 import {
   X,
@@ -32,6 +34,8 @@ import {
   Boxes,
   Lock,
   Unlock,
+  Building2,
+  CheckCircle2,
 } from 'lucide-react';
 
 interface LeadDetailDrawerProps {
@@ -58,6 +62,7 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
   const [showViberModal, setShowViberModal] = useState(false);
   const [showTradeInModal, setShowTradeInModal] = useState(false);
   const [showAllocateModal, setShowAllocateModal] = useState(false);
+  const [showMultiBankModal, setShowMultiBankModal] = useState(false);
   const [newNote, setNewNote] = useState('');
   const [isAddingNote, setIsAddingNote] = useState(false);
 
@@ -73,6 +78,22 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
       (lead.allocatedVehicleId ? inventoryService.getVehicleById(lead.allocatedVehicleId) : null)
     );
   }, [lead, activities]);
+
+  const bankOffers = useMemo(() => {
+    if (!lead) return [];
+    return multiBankService.getOffersForLead(lead.id);
+  }, [lead, activities]);
+
+  const handleOfferAccepted = async () => {
+    if (!lead) return;
+    const leads = await leadService.getLeads();
+    const updated = leads.find((l) => l.id === lead.id);
+    if (updated) {
+      onLeadUpdated(updated);
+    }
+    const refreshed = await leadService.getActivities(lead.id);
+    setActivities(refreshed);
+  };
 
   useEffect(() => {
     if (!lead) return;
@@ -439,6 +460,88 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
             </div>
           )}
 
+          {/* Multi-Bank Financing Desk Card */}
+          <div className="bg-paper border border-line rounded-control p-3 space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Building2 className="size-4 text-cobalt shrink-0" />
+                <span className="text-xs font-bold text-ink">
+                  Multi-Bank Financing Approval Matrix
+                </span>
+              </div>
+              {bankOffers.length > 0 && (
+                <span className="text-[10px] font-bold text-cobalt bg-cobalt-tint px-2 py-0.5 rounded-full border border-cobalt/20">
+                  {bankOffers.length} {bankOffers.length === 1 ? 'Bank' : 'Banks'} Submitted
+                </span>
+              )}
+            </div>
+
+            {bankOffers.length > 0 ? (
+              <div className="space-y-2 pt-1 border-t border-line">
+                {(() => {
+                  const accepted = bankOffers.find((o) => o.status === 'accepted');
+                  const approved = bankOffers.find((o) => o.status === 'approved');
+                  const bestOffer = accepted || approved || bankOffers[0];
+
+                  return (
+                    <>
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-sub">
+                          {accepted ? (
+                            <span className="text-won font-bold inline-flex items-center gap-1">
+                              <CheckCircle2 className="size-3" /> {accepted.bankName} (Accepted)
+                            </span>
+                          ) : approved ? (
+                            <span className="text-won font-bold inline-flex items-center gap-1">
+                              <CheckCircle2 className="size-3" /> {approved.bankName} (Approved)
+                            </span>
+                          ) : (
+                            <span className="text-sub">Underwriting ({bankOffers[0].bankName})</span>
+                          )}
+                        </span>
+                        <span className="font-display text-base font-bold text-ink tabular-nums">
+                          {formatPeso(bestOffer.monthlyAmortization)}
+                          <span className="text-[10px] text-sub font-normal">/mo</span>
+                        </span>
+                      </div>
+
+                      {accepted?.purchaseOrderNumber && (
+                        <p className="text-[10.5px] font-mono text-ink bg-wash px-2 py-1 rounded border border-line">
+                          PO #: <strong>{accepted.purchaseOrderNumber}</strong>
+                        </p>
+                      )}
+
+                      <div className="flex items-center justify-between pt-1 border-t border-line/60 text-[11px]">
+                        <span className="text-sub font-medium">
+                          Dealer Reserve:{' '}
+                          <strong className="text-won">+{formatPeso(bestOffer.dealerCommissionAmount)}</strong>
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setShowMultiBankModal(true)}
+                          className="text-cobalt font-bold hover:underline"
+                        >
+                          View All Offers &rarr;
+                        </button>
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
+            ) : (
+              <div className="flex items-center justify-between pt-1 border-t border-line">
+                <span className="text-xs text-sub">No bank credit applications submitted</span>
+                <button
+                  type="button"
+                  onClick={() => setShowMultiBankModal(true)}
+                  className="px-2.5 py-1 text-xs font-bold bg-cobalt hover:bg-cobalt-press text-white rounded-control shadow-sm transition-colors"
+                >
+                  Submit Applications
+                </button>
+              </div>
+            )}
+          </div>
+
           {/* Pipeline Action Controls */}
           {lead.status === 'active' && (
             <div className="space-y-2">
@@ -573,6 +676,14 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
                 <Boxes className="size-4 text-cobalt group-hover:scale-110 transition-transform" />
                 <span className="text-[11px] font-bold">Allocate VIN</span>
               </button>
+              <button
+                type="button"
+                onClick={() => setShowMultiBankModal(true)}
+                className="flex flex-col items-center justify-center p-2.5 rounded-control border border-line bg-wash hover:bg-line/60 text-ink text-center gap-1 transition-colors group"
+              >
+                <Building2 className="size-4 text-cobalt group-hover:scale-110 transition-transform" />
+                <span className="text-[11px] font-bold">Bank Matrix</span>
+              </button>
             </div>
           </div>
 
@@ -630,6 +741,13 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
         lead={lead}
         onClose={() => setShowAllocateModal(false)}
         onAllocated={handleVehicleAllocated}
+      />
+
+      <MultiBankMatrixModal
+        isOpen={showMultiBankModal}
+        lead={lead}
+        onClose={() => setShowMultiBankModal(false)}
+        onOfferAccepted={handleOfferAccepted}
       />
     </div>
   );

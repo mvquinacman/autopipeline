@@ -626,4 +626,51 @@ describe('AutoPipeline - End-to-End User Journey Verification', () => {
     // 6. Returned to Landing Page
     expect(await screen.findByText('Showroom Floor Operations Terminal')).toBeInTheDocument();
   });
+
+  it('Journey 19: Multi-Bank Auto Financing Approval Matrix tracks partner bank offers and issues Purchase Orders', async () => {
+    render(<App />);
+
+    // 1. Navigate to F&I Desk tab in main navigation
+    const mainNav = screen.getByRole('navigation', { name: /Main Navigation/i });
+    const fiTab = within(mainNav).getByRole('button', { name: /F&I Desk/i });
+    fireEvent.click(fiTab);
+
+    // 2. Verify F&I Desk header & spec-sheet KPI strip
+    expect(await screen.findByText(/F&I Desk • Multi-Bank Approval Board/i)).toBeInTheDocument();
+    expect(screen.getByText(/Total Submissions/i)).toBeInTheDocument();
+    expect(screen.getByText(/Loan Volume/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Approved \(PO Ready\)/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText(/Projected F&I Reserve/i)).toBeInTheDocument();
+
+    // 3. Verify Accredited Philippine Partner Banks scorecard
+    expect(screen.getAllByText('BPI Family Auto Loan').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('BDO Consumer Lending').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('PSBank Auto Loan').length).toBeGreaterThanOrEqual(1);
+
+    // 4. Find and click "Open Matrix" on an application
+    const openMatrixBtns = await screen.findAllByRole('button', { name: /Open Matrix/i });
+    fireEvent.click(openMatrixBtns[0]);
+
+    // 5. Verify Multi-Bank Matrix Modal opens with side-by-side comparison
+    const modalHeading = await screen.findByRole('heading', { name: /Multi-Bank Financing Approval Matrix/i });
+    expect(modalHeading).toBeInTheDocument();
+    expect(screen.getByText(/Submitted Partner Bank Offers/i)).toBeInTheDocument();
+
+    // 6. Verify BPI offer with Approved status and Accept Offer button
+    const acceptBtn = screen.getByRole('button', { name: /Accept Offer & Issue PO/i });
+    expect(acceptBtn).toBeInTheDocument();
+
+    // 7. Accept the winning bank offer and issue Purchase Order
+    fireEvent.click(acceptBtn);
+
+    // 8. Confirm PO issuance message
+    expect(await screen.findByText(/Offer accepted! Purchase Order PO-BPI-/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Client Accepted/i).length).toBeGreaterThanOrEqual(1);
+
+    // 9. Close matrix modal
+    const closeBtn = screen.getByRole('button', { name: /Close financing matrix/i });
+    fireEvent.click(closeBtn);
+
+    expect(screen.queryByRole('heading', { name: /Multi-Bank Financing Approval Matrix/i })).not.toBeInTheDocument();
+  });
 });

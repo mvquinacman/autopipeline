@@ -20,9 +20,22 @@ import { AuthModal } from './components/auth/AuthModal';
 import { LandingPage } from './components/auth/LandingPage';
 import { FloorBoardView } from './components/FloorBoardView';
 import { InventoryMatrixView } from './components/InventoryMatrixView';
-import { Plus, Kanban, CalendarCheck, BarChart3, LayoutGrid, Download, Users, Boxes, LogOut } from 'lucide-react';
+import { FiBoardView } from './components/FiBoardView';
+import { MultiBankMatrixModal } from './components/MultiBankMatrixModal';
+import {
+  Plus,
+  Kanban,
+  CalendarCheck,
+  BarChart3,
+  LayoutGrid,
+  Download,
+  Users,
+  Boxes,
+  Building2,
+  LogOut,
+} from 'lucide-react';
 
-type ViewMode = 'pipeline' | 'board' | 'follow_ups' | 'floor' | 'inventory' | 'analytics';
+type ViewMode = 'pipeline' | 'board' | 'follow_ups' | 'floor' | 'inventory' | 'fi_desk' | 'analytics';
 
 function AppContent() {
   const {
@@ -41,6 +54,7 @@ function AppContent() {
   const [followUps, setFollowUps] = useState<FollowUpWithLead[]>([]);
   const [selectedStage, setSelectedStage] = useState<Stage | null>(null);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+  const [matrixLead, setMatrixLead] = useState<Lead | null>(null);
   const [isAddLeadOpen, setIsAddLeadOpen] = useState(false);
 
   // Scoped to active role (Simulating RLS)
@@ -235,6 +249,15 @@ function AppContent() {
           </button>
           <button
             type="button"
+            onClick={() => setCurrentView('fi_desk')}
+            className={`px-3 py-1.5 rounded-control text-xs font-bold transition-colors flex items-center gap-1.5 ${
+              currentView === 'fi_desk' ? 'bg-cobalt text-white shadow-sm' : 'bg-wash text-ink hover:bg-line'
+            }`}
+          >
+            <Building2 className="size-3.5" /> F&amp;I Desk
+          </button>
+          <button
+            type="button"
             onClick={() => setCurrentView('analytics')}
             className={`px-3 py-1.5 rounded-control text-xs font-bold transition-colors flex items-center gap-1.5 ${
               currentView === 'analytics' ? 'bg-cobalt text-white shadow-sm' : 'bg-wash text-ink hover:bg-line'
@@ -322,6 +345,14 @@ function AppContent() {
           <InventoryMatrixView />
         )}
 
+        {currentView === 'fi_desk' && (
+          <FiBoardView
+            leads={scopedLeads}
+            onOpenLead={(l) => setSelectedLead(l)}
+            onOpenMatrix={(l) => setMatrixLead(l)}
+          />
+        )}
+
         {currentView === 'analytics' && (
           <FunnelAnalytics leads={scopedLeads} />
         )}
@@ -355,7 +386,7 @@ function AppContent() {
       {/* Mobile Agent Chrome: Bottom Tab Navigation */}
       <nav
         aria-label="Mobile Navigation"
-        className="md:hidden fixed bottom-0 inset-x-0 bg-card border-t border-line z-30 flex items-center justify-around h-16 safe-bottom shadow-lg"
+        className="md:hidden fixed bottom-0 inset-x-0 bg-card border-t border-line z-30 flex items-center justify-around h-16 safe-bottom shadow-lg overflow-x-auto"
       >
         <button
           type="button"
@@ -414,6 +445,16 @@ function AppContent() {
         </button>
         <button
           type="button"
+          onClick={() => setCurrentView('fi_desk')}
+          className={`flex-1 flex flex-col items-center justify-center py-1 transition-colors ${
+            currentView === 'fi_desk' ? 'text-cobalt font-bold' : 'text-sub hover:text-ink'
+          }`}
+        >
+          <Building2 className="size-5" />
+          <span className="text-[10px] uppercase font-bold mt-1">F&amp;I</span>
+        </button>
+        <button
+          type="button"
           onClick={() => setCurrentView('analytics')}
           className={`flex-1 flex flex-col items-center justify-center py-1 transition-colors ${
             currentView === 'analytics' ? 'text-cobalt font-bold' : 'text-sub hover:text-ink'
@@ -425,6 +466,17 @@ function AppContent() {
       </nav>
 
       <AuthModal isOpen={isAuthModalOpen} onClose={closeAuthModal} />
+
+      {matrixLead && (
+        <MultiBankMatrixModal
+          isOpen={true}
+          lead={matrixLead}
+          onClose={() => setMatrixLead(null)}
+          onOfferAccepted={() => {
+            leadService.getLeads().then((refreshed) => setAllLeads(refreshed));
+          }}
+        />
+      )}
     </main>
   );
 }
