@@ -82,7 +82,7 @@ export function ViberScriptModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink/50 backdrop-blur-sm animate-fade-in">
-      <div className="bg-card border border-line rounded-card max-w-lg w-full p-6 shadow-xl space-y-4">
+      <div className="bg-card border border-line rounded-card max-w-lg w-full p-4 sm:p-6 shadow-xl space-y-4 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between border-b border-line pb-3">
           <div className="flex items-center gap-2">
             <MessageSquare className="size-5 text-cobalt" />
@@ -109,11 +109,11 @@ export function ViberScriptModal({
         {/* Template Selector */}
         <div className="space-y-1.5">
           <label className="block text-xs font-semibold text-ink">Select Script Template</label>
-          <div className="grid grid-cols-2 gap-2 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
             <button
               type="button"
               onClick={() => setSelectedTemplate('visit_followup')}
-              className={`p-2 rounded-control font-bold text-left transition-colors ${
+              className={`p-2.5 rounded-control font-bold text-left transition-colors min-h-[44px] ${
                 selectedTemplate === 'visit_followup' ? 'bg-cobalt text-white shadow-sm' : 'bg-wash text-ink hover:bg-line'
               }`}
             >
@@ -122,7 +122,7 @@ export function ViberScriptModal({
             <button
               type="button"
               onClick={() => setSelectedTemplate('financing_promo')}
-              className={`p-2 rounded-control font-bold text-left transition-colors ${
+              className={`p-2.5 rounded-control font-bold text-left transition-colors min-h-[44px] ${
                 selectedTemplate === 'financing_promo' ? 'bg-cobalt text-white shadow-sm' : 'bg-wash text-ink hover:bg-line'
               }`}
             >
@@ -131,7 +131,7 @@ export function ViberScriptModal({
             <button
               type="button"
               onClick={() => setSelectedTemplate('test_drive_invite')}
-              className={`p-2 rounded-control font-bold text-left transition-colors ${
+              className={`p-2.5 rounded-control font-bold text-left transition-colors min-h-[44px] ${
                 selectedTemplate === 'test_drive_invite' ? 'bg-cobalt text-white shadow-sm' : 'bg-wash text-ink hover:bg-line'
               }`}
             >
@@ -140,7 +140,7 @@ export function ViberScriptModal({
             <button
               type="button"
               onClick={() => setSelectedTemplate('release_checklist')}
-              className={`p-2 rounded-control font-bold text-left transition-colors ${
+              className={`p-2.5 rounded-control font-bold text-left transition-colors min-h-[44px] ${
                 selectedTemplate === 'release_checklist' ? 'bg-cobalt text-white shadow-sm' : 'bg-wash text-ink hover:bg-line'
               }`}
             >
@@ -156,16 +156,16 @@ export function ViberScriptModal({
             readOnly
             value={messageText}
             rows={7}
-            className="w-full p-3 text-xs rounded-control border border-line bg-paper text-ink font-sans focus:outline-none resize-none leading-relaxed"
+            className="w-full p-3 text-base sm:text-xs rounded-control border border-line bg-paper text-ink font-sans focus:outline-none resize-none leading-relaxed"
           />
         </div>
 
         {/* Actions */}
-        <div className="flex items-center justify-between pt-2 border-t border-line">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 pt-2 border-t border-line">
           <button
             type="button"
             onClick={handleCopy}
-            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-control text-xs font-bold border border-line transition-colors ${
+            className={`inline-flex items-center justify-center gap-1.5 px-3.5 py-2 sm:py-1.5 rounded-control text-xs font-bold border border-line transition-colors min-h-[44px] sm:min-h-0 ${
               copied ? 'bg-won text-white' : 'bg-wash hover:bg-line text-ink'
             }`}
           >
@@ -173,18 +173,18 @@ export function ViberScriptModal({
             {copied ? 'Copied to Clipboard!' : 'Copy Script'}
           </button>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 justify-end">
             <button
               type="button"
               onClick={onClose}
-              className="px-3 py-1.5 text-xs font-medium text-sub hover:text-ink"
+              className="px-3 py-2 sm:py-1.5 text-xs font-medium text-sub hover:text-ink min-h-[44px] sm:min-h-0"
             >
               Close
             </button>
             <button
               type="button"
               onClick={handleLogAndClose}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-control text-xs font-bold bg-cobalt hover:bg-cobalt-press text-white shadow-sm transition-colors"
+              className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 sm:py-1.5 rounded-control text-xs font-bold bg-cobalt hover:bg-cobalt-press text-white shadow-sm transition-colors min-h-[44px] sm:min-h-0"
             >
               <Send className="size-3.5" /> Log Outreach Event
             </button>

@@ -36,7 +36,7 @@ export function StageRail({
   return (
     <nav
       aria-label="Pipeline Stages"
-      className="w-full overflow-x-auto flex-nowrap scrollbar-none snap-x py-1 flex items-center gap-2"
+      className="w-full overflow-x-auto flex-nowrap scrollbar-none snap-x snap-mandatory touch-pan-x py-1 flex items-center gap-2"
     >
       <button
         type="button"

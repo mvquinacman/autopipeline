@@ -94,7 +94,7 @@ export default function App() {
   };
 
   return (
-    <main className="min-h-screen bg-paper text-ink p-4 sm:p-6 font-sans">
+    <main className="min-h-screen bg-paper text-ink p-4 sm:p-6 pb-24 md:pb-6 font-sans">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Dealership Header */}
         <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-line pb-4">
@@ -108,7 +108,7 @@ export default function App() {
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
             <QuickSearchBar
               leads={scopedLeads}
               onSelectLead={(l) => setSelectedLead(l)}
@@ -121,23 +121,24 @@ export default function App() {
             <button
               type="button"
               onClick={() => exportLeadsToCsv(filteredLeads, `autopipeline-leads-${currentProfile.role}.csv`)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-control text-xs font-semibold bg-wash hover:bg-line text-ink border border-line transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-control text-xs font-semibold bg-wash hover:bg-line text-ink border border-line transition-colors min-h-[36px]"
               title="Export filtered pipeline leads to CSV"
             >
-              <Download className="size-3.5 text-sub" /> Export CSV
+              <Download className="size-3.5 text-sub" />
+              <span className="hidden sm:inline">Export CSV</span>
             </button>
             <button
               type="button"
               onClick={() => setIsAddLeadOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-control text-xs font-bold bg-cobalt hover:bg-cobalt-press text-white shadow-sm transition-colors"
+              className="hidden md:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-control text-xs font-bold bg-cobalt hover:bg-cobalt-press text-white shadow-sm transition-colors min-h-[36px]"
             >
               <Plus className="size-4" /> Add Lead
             </button>
           </div>
         </header>
 
-        {/* View Switcher Tabs */}
-        <nav aria-label="Main Navigation" className="flex items-center gap-1.5 border-b border-line pb-2">
+        {/* View Switcher Tabs (Desktop & Tablet) */}
+        <nav aria-label="Main Navigation" className="hidden md:flex items-center gap-1.5 border-b border-line pb-2">
           <button
             type="button"
             onClick={() => setCurrentView('pipeline')}
@@ -270,6 +271,68 @@ export default function App() {
         onClose={() => setIsAddLeadOpen(false)}
         onLeadCreated={handleLeadCreated}
       />
+
+      {/* Mobile Agent Chrome: Floating Action Button (FAB) */}
+      <button
+        type="button"
+        onClick={() => setIsAddLeadOpen(true)}
+        aria-label="Add new lead"
+        className="md:hidden fixed bottom-20 right-4 size-14 rounded-full bg-cobalt hover:bg-cobalt-press text-white shadow-xl flex items-center justify-center z-30 transition-transform active:scale-95 focus-visible:ring-2 focus-visible:ring-cobalt focus-visible:outline-none"
+      >
+        <Plus className="size-6" />
+      </button>
+
+      {/* Mobile Agent Chrome: Bottom Tab Navigation */}
+      <nav
+        aria-label="Mobile Navigation"
+        className="md:hidden fixed bottom-0 inset-x-0 bg-card border-t border-line z-30 flex items-center justify-around h-16 safe-bottom shadow-lg"
+      >
+        <button
+          type="button"
+          onClick={() => setCurrentView('pipeline')}
+          className={`flex-1 flex flex-col items-center justify-center py-1 transition-colors ${
+            currentView === 'pipeline' ? 'text-cobalt font-bold' : 'text-sub hover:text-ink'
+          }`}
+        >
+          <Kanban className="size-5" />
+          <span className="text-[10px] uppercase font-bold mt-1">Pipeline</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setCurrentView('board')}
+          className={`flex-1 flex flex-col items-center justify-center py-1 transition-colors ${
+            currentView === 'board' ? 'text-cobalt font-bold' : 'text-sub hover:text-ink'
+          }`}
+        >
+          <LayoutGrid className="size-5" />
+          <span className="text-[10px] uppercase font-bold mt-1">Board</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setCurrentView('follow_ups')}
+          className={`flex-1 flex flex-col items-center justify-center py-1 transition-colors relative ${
+            currentView === 'follow_ups' ? 'text-cobalt font-bold' : 'text-sub hover:text-ink'
+          }`}
+        >
+          <div className="relative">
+            <CalendarCheck className="size-5" />
+            {kpis.overdueFollowUpsCount > 0 && (
+              <span className="absolute -top-1 -right-1 size-2 rounded-full bg-overdue ring-2 ring-card" />
+            )}
+          </div>
+          <span className="text-[10px] uppercase font-bold mt-1">Follow-ups</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setCurrentView('analytics')}
+          className={`flex-1 flex flex-col items-center justify-center py-1 transition-colors ${
+            currentView === 'analytics' ? 'text-cobalt font-bold' : 'text-sub hover:text-ink'
+          }`}
+        >
+          <BarChart3 className="size-5" />
+          <span className="text-[10px] uppercase font-bold mt-1">Analytics</span>
+        </button>
+      </nav>
     </main>
   );
 }

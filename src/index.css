@@ -43,4 +43,13 @@
   .tabular-nums {
     font-variant-numeric: tabular-nums;
   }
+
+  .touch-pan-x {
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x;
+  }
+
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 16px);
+  }
 }

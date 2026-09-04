@@ -49,7 +49,7 @@ export function TestDriveModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink/50 backdrop-blur-sm animate-fade-in">
-      <div className="bg-card border border-line rounded-card max-w-lg w-full p-6 shadow-xl space-y-4">
+      <div className="bg-card border border-line rounded-card max-w-lg w-full p-4 sm:p-6 shadow-xl space-y-4 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between border-b border-line pb-3">
           <div className="flex items-center gap-2">
             <Compass className="size-5 text-cobalt" />
@@ -82,7 +82,7 @@ export function TestDriveModal({
             <select
               value={selectedUnit}
               onChange={(e) => setSelectedUnit(e.target.value)}
-              className="w-full h-9 px-3 rounded-control border border-line bg-paper text-ink focus:ring-1 focus:ring-cobalt focus:outline-none"
+              className="w-full h-10 sm:h-9 px-3 rounded-control border border-line bg-paper text-base sm:text-xs text-ink focus:ring-1 focus:ring-cobalt focus:outline-none"
             >
               {DEMO_FLEET.map((u) => (
                 <option key={u} value={u}>
@@ -100,7 +100,7 @@ export function TestDriveModal({
                 required
                 value={scheduledDate}
                 onChange={(e) => setScheduledDate(e.target.value)}
-                className="w-full h-9 px-3 rounded-control border border-line bg-paper text-ink focus:ring-1 focus:ring-cobalt focus:outline-none"
+                className="w-full h-10 sm:h-9 px-3 rounded-control border border-line bg-paper text-base sm:text-xs text-ink focus:ring-1 focus:ring-cobalt focus:outline-none"
               />
             </div>
             <div>
@@ -114,7 +114,7 @@ export function TestDriveModal({
                   setErrorMsg('');
                 }}
                 placeholder="e.g. N02-18-092812"
-                className="w-full h-9 px-3 rounded-control border border-line bg-paper text-ink focus:ring-1 focus:ring-cobalt focus:outline-none"
+                className="w-full h-10 sm:h-9 px-3 rounded-control border border-line bg-paper text-base sm:text-xs text-ink focus:ring-1 focus:ring-cobalt focus:outline-none"
               />
             </div>
           </div>
@@ -135,12 +135,12 @@ export function TestDriveModal({
           </label>
 
           <div className="flex items-center justify-end gap-2 pt-3 border-t border-line">
-            <button type="button" onClick={onClose} className="px-3 py-1.5 text-xs font-medium text-sub hover:text-ink">
+            <button type="button" onClick={onClose} className="px-3 py-1.5 text-xs font-medium text-sub hover:text-ink min-h-[44px] sm:min-h-0">
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-1.5 text-xs font-bold rounded-control bg-cobalt hover:bg-cobalt-press text-white shadow-sm transition-colors flex items-center gap-1.5"
+              className="px-4 py-1.5 text-xs font-bold rounded-control bg-cobalt hover:bg-cobalt-press text-white shadow-sm transition-colors flex items-center gap-1.5 min-h-[44px] sm:min-h-0"
             >
               <Check className="size-3.5" /> Book Demo Drive
             </button>

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import App from '../App';
 import { leadService } from '../services/leadService';
 
@@ -14,6 +14,9 @@ describe('AutoPipeline - End-to-End User Journey Verification', () => {
     // Header and core signatures are visible
     expect(screen.getByText('AutoPipeline')).toBeInTheDocument();
     expect(screen.getByText('Metro Manila Motors — BGC Showroom')).toBeInTheDocument();
+
+    // Default agent is Paolo Morales (role: agent)
+    expect(screen.getByText('Paolo Morales')).toBeInTheDocument();
     expect(screen.getByText('Monthly Target')).toBeInTheDocument();
 
     // Default active profile is Agent Paolo Morales (7 leads scoped)
@@ -25,6 +28,7 @@ describe('AutoPipeline - End-to-End User Journey Verification', () => {
 
     await waitFor(() => {
       expect(screen.getByText(/All Scoped Leads/)).toHaveTextContent('(14)');
+      expect(screen.getByText('Team Alpha Performance')).toBeInTheDocument();
     });
 
     // Switch role to Dealer Principal: Vicente Tan (14 dealership leads scoped)
@@ -38,16 +42,17 @@ describe('AutoPipeline - End-to-End User Journey Verification', () => {
 
   it('Journey 2: View navigation switches between Pipeline, Follow-ups Hub, and Analytics', async () => {
     render(<App />);
+    const mainNav = screen.getByRole('navigation', { name: /Main Navigation/i });
 
     // Switch to Follow-ups tab
-    const followUpsTab = screen.getByRole('button', { name: /Follow-ups/i });
+    const followUpsTab = within(mainNav).getByRole('button', { name: /Follow-ups/i });
     fireEvent.click(followUpsTab);
 
     // Follow-ups Hub rendered
     expect(await screen.findByText(/Active Tasks/i)).toBeInTheDocument();
 
     // Switch to Analytics tab
-    const analyticsTab = screen.getByRole('button', { name: /Analytics/i });
+    const analyticsTab = within(mainNav).getByRole('button', { name: /Analytics/i });
     fireEvent.click(analyticsTab);
 
     // Analytics Funnel rendered
@@ -56,7 +61,7 @@ describe('AutoPipeline - End-to-End User Journey Verification', () => {
     expect(screen.getByText('Top Vehicle Model Demand')).toBeInTheDocument();
 
     // Return to Pipeline
-    const pipelineTab = screen.getByRole('button', { name: /Pipeline/i });
+    const pipelineTab = within(mainNav).getByRole('button', { name: /Pipeline/i });
     fireEvent.click(pipelineTab);
     expect(await screen.findByText(/All Scoped Leads/)).toBeInTheDocument();
   });
@@ -113,7 +118,8 @@ describe('AutoPipeline - End-to-End User Journey Verification', () => {
     render(<App />);
 
     // Navigate to Follow-ups
-    fireEvent.click(screen.getByRole('button', { name: /Follow-ups/i }));
+    const mainNav = screen.getByRole('navigation', { name: /Main Navigation/i });
+    fireEvent.click(within(mainNav).getByRole('button', { name: /Follow-ups/i }));
 
     // Find a "Done" button asynchronously
     const doneButtons = await screen.findAllByRole('button', { name: /Done/i });
@@ -149,7 +155,8 @@ describe('AutoPipeline - End-to-End User Journey Verification', () => {
     render(<App />);
 
     // Switch to Kanban Board
-    const boardTab = screen.getByRole('button', { name: /Kanban Board/i });
+    const mainNav = screen.getByRole('navigation', { name: /Main Navigation/i });
+    const boardTab = within(mainNav).getByRole('button', { name: /Kanban Board/i });
     fireEvent.click(boardTab);
 
     // Verify Kanban board rendered
@@ -286,5 +293,29 @@ describe('AutoPipeline - End-to-End User Journey Verification', () => {
 
     expect(mockCreateObjectURL).toHaveBeenCalled();
     expect(appendSpy).toHaveBeenCalled();
+  });
+
+  it('Journey 13: Mobile Agent Chrome renders bottom navigation and FAB triggers lead intake', async () => {
+    render(<App />);
+
+    // Check Mobile Navigation bar exists with landmark
+    const mobileNav = screen.getByRole('navigation', { name: /Mobile Navigation/i });
+    expect(mobileNav).toBeInTheDocument();
+
+    // Check Mobile FAB exists
+    const fabBtn = screen.getByRole('button', { name: /Add new lead/i });
+    expect(fabBtn).toBeInTheDocument();
+
+    // Clicking FAB opens Add New Lead modal
+    fireEvent.click(fabBtn);
+    expect(await screen.findByRole('heading', { name: /Add New Lead/i })).toBeInTheDocument();
+
+    // Cancel modal
+    const cancelBtn = screen.getByRole('button', { name: /Cancel/i });
+    fireEvent.click(cancelBtn);
+
+    await waitFor(() => {
+      expect(screen.queryByRole('heading', { name: /Add New Lead/i })).not.toBeInTheDocument();
+    });
   });
 });

@@ -46,7 +46,7 @@ export function FinancingCalculatorModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink/50 backdrop-blur-sm animate-fade-in">
-      <div className="bg-card border border-line rounded-card max-w-lg w-full p-6 shadow-xl space-y-4">
+      <div className="bg-card border border-line rounded-card max-w-lg w-full p-4 sm:p-6 shadow-xl space-y-4 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between border-b border-line pb-3">
           <div className="flex items-center gap-2">
             <Calculator className="size-5 text-cobalt" />
@@ -79,11 +79,14 @@ export function FinancingCalculatorModal({
                   key={pct}
                   type="button"
                   onClick={() => setDpPercent(pct)}
-                  className={`py-1.5 rounded-control font-bold transition-colors ${
+                  className={`py-1.5 px-1 rounded-control font-bold transition-colors text-center ${
                     dpPercent === pct ? 'bg-cobalt text-white shadow-sm' : 'bg-wash text-ink hover:bg-line'
                   }`}
                 >
-                  {pct}% ({formatPeso(Math.round(lead.estValue * (pct / 100)), true)})
+                  <span className="block text-xs">{pct}%</span>
+                  <span className="block text-[10px] opacity-80 tabular-nums">
+                    {formatPeso(Math.round(lead.estValue * (pct / 100)), true)}
+                  </span>
                 </button>
               ))}
             </div>
@@ -97,11 +100,14 @@ export function FinancingCalculatorModal({
                   key={term}
                   type="button"
                   onClick={() => setTermMonths(term)}
-                  className={`py-1.5 rounded-control font-bold transition-colors ${
+                  className={`py-1.5 px-1 rounded-control font-bold transition-colors text-center ${
                     termMonths === term ? 'bg-cobalt text-white shadow-sm' : 'bg-wash text-ink hover:bg-line'
                   }`}
                 >
-                  {term} Mos ({term / 12} Yrs)
+                  <span className="block text-xs">{term} Mos</span>
+                  <span className="block text-[10px] opacity-80">
+                    {term / 12} Yrs
+                  </span>
                 </button>
               ))}
             </div>
@@ -112,7 +118,7 @@ export function FinancingCalculatorModal({
             <select
               value={bankId}
               onChange={(e) => setBankId(e.target.value)}
-              className="w-full h-9 px-3 rounded-control border border-line bg-paper text-ink focus:ring-1 focus:ring-cobalt focus:outline-none"
+              className="w-full h-10 sm:h-9 px-3 rounded-control border border-line bg-paper text-base sm:text-xs text-ink focus:ring-1 focus:ring-cobalt focus:outline-none"
             >
               {BANK_PRESETS.map((b) => (
                 <option key={b.id} value={b.id}>

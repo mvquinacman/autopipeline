@@ -181,7 +181,7 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
 
   return (
     <div className="fixed inset-0 z-40 flex justify-end bg-ink/40 backdrop-blur-sm animate-fade-in">
-      <div className="w-full max-w-lg bg-card border-l border-line h-full flex flex-col shadow-2xl overflow-hidden">
+      <div className="w-full sm:max-w-lg bg-card border-l border-line h-full flex flex-col shadow-2xl overflow-hidden">
         {/* Drawer Header */}
         <div className="p-4 border-b border-line flex items-center justify-between bg-paper">
           <div className="space-y-0.5">

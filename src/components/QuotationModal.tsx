@@ -50,14 +50,14 @@ export function QuotationModal({ isOpen, lead, onClose }: QuotationModalProps) {
         {/* Printable Document Body */}
         <div className="space-y-6 text-ink">
           {/* Header */}
-          <div className="flex justify-between items-start border-b border-ink pb-4">
+          <div className="flex flex-col sm:flex-row justify-between items-start gap-4 border-b border-ink pb-4">
             <div>
               <h2 className="font-display text-2xl font-bold text-ink tracking-tight">METRO MANILA MOTORS</h2>
               <p className="text-xs text-sub">Bonifacio Global City Showroom</p>
               <p className="text-[11px] text-sub">32nd Street cor. Rizal Drive, BGC, Taguig City</p>
               <p className="text-[11px] text-sub">Tel: +63 (2) 8888-TOYOTA | VAT Reg: 004-829-102-000</p>
             </div>
-            <div className="text-right">
+            <div className="sm:text-right">
               <span className="inline-block px-2.5 py-1 text-xs font-bold bg-wash rounded border border-line">
                 PRO-FORMA QUOTATION
               </span>
@@ -68,14 +68,14 @@ export function QuotationModal({ isOpen, lead, onClose }: QuotationModalProps) {
           </div>
 
           {/* Customer & Consultant Info */}
-          <div className="grid grid-cols-2 gap-4 text-xs bg-wash/40 p-3.5 rounded-control border border-line">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs bg-wash/40 p-3.5 rounded-control border border-line">
             <div className="space-y-1">
               <p className="text-[10px] uppercase font-bold text-sub">Customer Information</p>
               <p className="font-bold text-ink text-sm">{lead.customerName}</p>
               <p className="text-sub">Mobile: {lead.customerPhone}</p>
               {lead.customerEmail && <p className="text-sub">Email: {lead.customerEmail}</p>}
             </div>
-            <div className="space-y-1 text-right">
+            <div className="space-y-1 sm:text-right">
               <p className="text-[10px] uppercase font-bold text-sub">Account Executive</p>
               <p className="font-bold text-ink text-sm">{lead.agentName}</p>
               <p className="text-sub">Sales Consultant</p>
@@ -115,7 +115,7 @@ export function QuotationModal({ isOpen, lead, onClose }: QuotationModalProps) {
                 <span className="text-sub">Chattel Mortgage &amp; Encumbrance Processing Fee</span>
                 <span className="tabular-nums text-ink">{formatPeso(chattelFee)}</span>
               </div>
-              <div className="flex justify-between p-3.5 bg-paper font-display text-base font-bold">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3.5 bg-paper font-display text-sm sm:text-base font-bold gap-1">
                 <span>TOTAL AMOUNT PAYABLE (CASH OUTLAY / FULL PURCHASE)</span>
                 <span className="text-cobalt tabular-nums">{formatPeso(totalPayable)}</span>
               </div>
@@ -123,18 +123,18 @@ export function QuotationModal({ isOpen, lead, onClose }: QuotationModalProps) {
           </div>
 
           {/* Signatures */}
-          <div className="grid grid-cols-2 gap-8 pt-8 border-t border-line text-xs">
-            <div className="space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-6 sm:pt-8 border-t border-line text-xs">
+            <div className="space-y-4 sm:space-y-6">
               <p className="text-sub">Prepared by:</p>
-              <div className="border-b border-ink/40 w-48" />
+              <div className="border-b border-ink/40 w-full max-w-[192px]" />
               <div>
                 <p className="font-bold text-ink">{lead.agentName}</p>
                 <p className="text-[11px] text-sub">Sales Consultant</p>
               </div>
             </div>
-            <div className="space-y-6 text-right">
+            <div className="space-y-4 sm:space-y-6 sm:text-right">
               <p className="text-sub">Approved by:</p>
-              <div className="border-b border-ink/40 w-48 ml-auto" />
+              <div className="border-b border-ink/40 w-full max-w-[192px] sm:ml-auto" />
               <div>
                 <p className="font-bold text-ink">Rafael Alcantara</p>
                 <p className="text-[11px] text-sub">General Sales Manager</p>

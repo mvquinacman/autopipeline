@@ -78,11 +78,11 @@ export function FollowUpsHub({
       )}
 
       {/* Tabs */}
-      <div className="flex flex-wrap items-center gap-1.5 border-b border-line pb-2">
+      <div className="flex items-center gap-1.5 border-b border-line pb-2 overflow-x-auto scrollbar-none flex-nowrap snap-x touch-pan-x">
         <button
           type="button"
           onClick={() => setActiveTab('active')}
-          className={`px-3 py-1.5 rounded-control text-xs font-bold transition-colors ${
+          className={`shrink-0 snap-start px-3 py-1.5 rounded-control text-xs font-bold transition-colors ${
             activeTab === 'active' ? 'bg-cobalt text-white' : 'bg-wash text-ink hover:bg-line'
           }`}
         >
@@ -91,7 +91,7 @@ export function FollowUpsHub({
         <button
           type="button"
           onClick={() => setActiveTab('overdue')}
-          className={`px-3 py-1.5 rounded-control text-xs font-bold transition-colors ${
+          className={`shrink-0 snap-start px-3 py-1.5 rounded-control text-xs font-bold transition-colors ${
             activeTab === 'overdue' ? 'bg-overdue text-white' : 'bg-wash text-overdue hover:bg-line'
           }`}
         >
@@ -100,7 +100,7 @@ export function FollowUpsHub({
         <button
           type="button"
           onClick={() => setActiveTab('due_today')}
-          className={`px-3 py-1.5 rounded-control text-xs font-bold transition-colors ${
+          className={`shrink-0 snap-start px-3 py-1.5 rounded-control text-xs font-bold transition-colors ${
             activeTab === 'due_today' ? 'bg-due text-white' : 'bg-wash text-ink hover:bg-line'
           }`}
         >
@@ -109,7 +109,7 @@ export function FollowUpsHub({
         <button
           type="button"
           onClick={() => setActiveTab('upcoming')}
-          className={`px-3 py-1.5 rounded-control text-xs font-bold transition-colors ${
+          className={`shrink-0 snap-start px-3 py-1.5 rounded-control text-xs font-bold transition-colors ${
             activeTab === 'upcoming' ? 'bg-ink text-white' : 'bg-wash text-ink hover:bg-line'
           }`}
         >
@@ -118,7 +118,7 @@ export function FollowUpsHub({
         <button
           type="button"
           onClick={() => setActiveTab('done')}
-          className={`px-3 py-1.5 rounded-control text-xs font-bold transition-colors ${
+          className={`shrink-0 snap-start px-3 py-1.5 rounded-control text-xs font-bold transition-colors ${
             activeTab === 'done' ? 'bg-won text-white' : 'bg-wash text-ink hover:bg-line'
           }`}
         >

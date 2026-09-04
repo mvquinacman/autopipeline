@@ -92,7 +92,7 @@ export const AddLeadModal: React.FC<AddLeadModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink/50 backdrop-blur-sm animate-fade-in">
-      <div className="bg-card border border-line rounded-card max-w-lg w-full p-6 shadow-xl space-y-4 max-h-[90vh] overflow-y-auto">
+      <div className="bg-card border border-line rounded-card max-w-lg w-full p-4 sm:p-6 shadow-xl space-y-4 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between border-b border-line pb-3">
           <div className="flex items-center gap-2">
             <UserPlus className="size-5 text-cobalt" />
@@ -119,7 +119,7 @@ export const AddLeadModal: React.FC<AddLeadModalProps> = ({
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
                 placeholder="e.g. Maria Santos"
-                className="w-full h-10 px-3 rounded-control border border-line bg-paper text-ink focus:ring-2 focus:ring-cobalt focus:outline-none"
+                className="w-full h-10 px-3 rounded-control border border-line bg-paper text-base sm:text-xs text-ink focus:ring-2 focus:ring-cobalt focus:outline-none"
               />
             </div>
             <div>
@@ -130,7 +130,7 @@ export const AddLeadModal: React.FC<AddLeadModalProps> = ({
                 value={customerPhone}
                 onChange={(e) => setCustomerPhone(e.target.value)}
                 placeholder="e.g. +63 917 123 4567"
-                className="w-full h-10 px-3 rounded-control border border-line bg-paper text-ink focus:ring-2 focus:ring-cobalt focus:outline-none"
+                className="w-full h-10 px-3 rounded-control border border-line bg-paper text-base sm:text-xs text-ink focus:ring-2 focus:ring-cobalt focus:outline-none"
               />
             </div>
           </div>
@@ -148,7 +148,7 @@ export const AddLeadModal: React.FC<AddLeadModalProps> = ({
               <select
                 value={modelInterest}
                 onChange={(e) => handleModelChange(e.target.value)}
-                className="w-full h-10 px-3 rounded-control border border-line bg-paper text-ink focus:ring-2 focus:ring-cobalt focus:outline-none"
+                className="w-full h-10 px-3 rounded-control border border-line bg-paper text-base sm:text-xs text-ink focus:ring-2 focus:ring-cobalt focus:outline-none"
               >
                 {VEHICLE_MODELS.map((m) => (
                   <option key={m.name} value={m.name}>{m.name}</option>
@@ -161,7 +161,7 @@ export const AddLeadModal: React.FC<AddLeadModalProps> = ({
                 type="number"
                 value={estValue}
                 onChange={(e) => setEstValue(Number(e.target.value))}
-                className="w-full h-10 px-3 rounded-control border border-line bg-paper text-ink tabular-nums font-semibold focus:ring-2 focus:ring-cobalt focus:outline-none"
+                className="w-full h-10 px-3 rounded-control border border-line bg-paper text-base sm:text-xs text-ink tabular-nums font-semibold focus:ring-2 focus:ring-cobalt focus:outline-none"
               />
             </div>
           </div>
@@ -174,7 +174,7 @@ export const AddLeadModal: React.FC<AddLeadModalProps> = ({
                 value={customerEmail}
                 onChange={(e) => setCustomerEmail(e.target.value)}
                 placeholder="customer@email.com"
-                className="w-full h-10 px-3 rounded-control border border-line bg-paper text-ink focus:ring-2 focus:ring-cobalt focus:outline-none"
+                className="w-full h-10 px-3 rounded-control border border-line bg-paper text-base sm:text-xs text-ink focus:ring-2 focus:ring-cobalt focus:outline-none"
               />
             </div>
             <div>
@@ -182,7 +182,7 @@ export const AddLeadModal: React.FC<AddLeadModalProps> = ({
               <select
                 value={source}
                 onChange={(e) => setSource(e.target.value)}
-                className="w-full h-10 px-3 rounded-control border border-line bg-paper text-ink focus:ring-2 focus:ring-cobalt focus:outline-none"
+                className="w-full h-10 px-3 rounded-control border border-line bg-paper text-base sm:text-xs text-ink focus:ring-2 focus:ring-cobalt focus:outline-none"
               >
                 <option value="walk_in">Showroom Walk-in</option>
                 <option value="facebook">Facebook / Social</option>
@@ -200,7 +200,7 @@ export const AddLeadModal: React.FC<AddLeadModalProps> = ({
               onChange={(e) => setNotes(e.target.value)}
               placeholder="e.g. Financing pre-qualification, preferred color, trade-in details..."
               rows={2}
-              className="w-full p-2.5 rounded-control border border-line bg-paper text-ink focus:ring-2 focus:ring-cobalt focus:outline-none"
+              className="w-full p-2.5 rounded-control border border-line bg-paper text-base sm:text-xs text-ink focus:ring-2 focus:ring-cobalt focus:outline-none"
             />
           </div>
 
@@ -208,14 +208,14 @@ export const AddLeadModal: React.FC<AddLeadModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-control font-semibold text-ink bg-wash border border-line hover:bg-line/50"
+              className="px-4 py-2 rounded-control font-semibold text-ink bg-wash border border-line hover:bg-line/50 min-h-[44px] sm:min-h-0"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={duplicateCheck.isDuplicate && !allowOverride}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-control font-bold text-white bg-cobalt hover:bg-cobalt-press disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-control font-bold text-white bg-cobalt hover:bg-cobalt-press disabled:opacity-50 disabled:cursor-not-allowed transition-colors min-h-[44px] sm:min-h-0"
             >
               <CheckCircle2 className="size-4" /> Save New Lead
             </button>

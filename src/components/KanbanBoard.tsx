@@ -31,14 +31,14 @@ export function KanbanBoard({ leads, onSelectLead, onAdvanceLead }: KanbanBoardP
   }, [leads]);
 
   return (
-    <div className="w-full overflow-x-auto pb-4 scrollbar-none">
-      <div className="flex gap-3 min-w-[1100px] items-start">
+    <div className="w-full overflow-x-auto pb-4 scrollbar-none snap-x snap-mandatory touch-pan-x">
+      <div className="flex gap-3 min-w-[1100px] items-start px-0.5">
         {STAGES.map((cfg) => {
           const group = stageGroups[cfg.id];
           return (
             <div
               key={cfg.id}
-              className="w-72 shrink-0 bg-wash/50 border border-line rounded-card flex flex-col max-h-[75vh]"
+              className="w-[82vw] sm:w-72 shrink-0 bg-wash/50 border border-line rounded-card flex flex-col max-h-[75vh] snap-center sm:snap-start"
             >
               {/* Column Header */}
               <div
