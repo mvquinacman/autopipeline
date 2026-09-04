@@ -4,16 +4,7 @@ import type { Lead, Stage } from './types/crm';
 import { KpiStrip } from './components/KpiStrip';
 import { StageRail } from './components/StageRail';
 import { LeadsList } from './components/LeadsList';
-
-const STAGE_ORDER: Stage[] = [
-  'new',
-  'contacted',
-  'showroom',
-  'test_drive',
-  'application',
-  'approved',
-  'released',
-];
+import { leadService } from './services/leadService';
 
 export default function App() {
   const [leads, setLeads] = useState<Lead[]>(SEED_LEADS);
@@ -26,23 +17,13 @@ export default function App() {
     return leads.filter((lead) => lead.stage === selectedStage);
   }, [leads, selectedStage]);
 
-  const handleAdvanceStage = (leadId: string) => {
-    setLeads((prev) =>
-      prev.map((lead) => {
-        if (lead.id !== leadId) return lead;
-        const idx = STAGE_ORDER.indexOf(lead.stage);
-        if (idx < 0 || idx >= STAGE_ORDER.length - 1) return lead;
-        const nextStage = STAGE_ORDER[idx + 1];
-        const isReleased = nextStage === 'released';
-        return {
-          ...lead,
-          stage: nextStage,
-          status: isReleased ? 'won' : lead.status,
-          probability: isReleased ? 1.0 : Math.min(1.0, lead.probability + 0.15),
-          updatedAt: new Date().toISOString(),
-        };
-      })
-    );
+  const handleAdvanceStage = async (leadId: string) => {
+    try {
+      const updated = await leadService.advanceStage(leadId);
+      setLeads((prev) => prev.map((l) => (l.id === leadId ? updated : l)));
+    } catch (err) {
+      console.error('Failed to advance stage:', err);
+    }
   };
 
   return (

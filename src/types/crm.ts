@@ -39,8 +39,9 @@ export interface Lead {
   agentName: string;
   customerName: string;
   customerPhone: string;
-  customerEmail: string;
+  customerEmail?: string;
   modelInterest: string;
+  source?: string;
   estValue: number;
   probability: number;
   stage: Stage;
