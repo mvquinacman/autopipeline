@@ -4,11 +4,11 @@ import { DealershipPermission, UserSession } from '../types/auth';
 import { authService } from '../services/authService';
 
 interface AuthContextValue {
-  currentProfile: Profile;
-  session: UserSession;
+  currentProfile: Profile | null;
+  session: UserSession | null;
   profiles: Profile[];
   switchProfile: (profileOrId: Profile | string, pin?: string) => boolean;
-  login: (profileId: string, pin?: string) => boolean;
+  login: (profileIdOrEmail: string, pin?: string) => boolean;
   logout: () => void;
   hasPermission: (permission: DealershipPermission) => boolean;
   isAtLeastRole: (minRole: Role) => boolean;
@@ -23,21 +23,14 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const profiles = useMemo(() => authService.getProfiles(), []);
 
-  // Initialize session from storage or default to first agent (Paolo Morales)
-  const [session, setSession] = useState<UserSession>(() => {
-    const saved = authService.loadSession();
-    if (saved && saved.user) {
-      return saved;
-    }
-    const defaultProfile = profiles[0];
-    const initialSession = authService.createSession(defaultProfile);
-    authService.saveSession(initialSession);
-    return initialSession;
+  // Initialize session from storage (or null if not logged in)
+  const [session, setSession] = useState<UserSession | null>(() => {
+    return authService.loadSession();
   });
 
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
-  const currentProfile = session.user;
+  const currentProfile = session?.user || null;
 
   const switchProfile = useCallback(
     (profileOrId: Profile | string, pin?: string): boolean => {
@@ -54,36 +47,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 
   const login = useCallback(
-    (profileId: string, pin?: string): boolean => {
-      return switchProfile(profileId, pin);
+    (profileIdOrEmail: string, pin?: string): boolean => {
+      return switchProfile(profileIdOrEmail, pin);
     },
     [switchProfile]
   );
 
   const logout = useCallback(() => {
-    // Reset to base agent
-    const defaultProfile = profiles[0];
-    const initialSession = authService.createSession(defaultProfile);
-    setSession(initialSession);
-    authService.saveSession(initialSession);
-  }, [profiles]);
+    authService.clearSession();
+    setSession(null);
+  }, []);
 
   const hasPermission = useCallback(
     (permission: DealershipPermission): boolean => {
+      if (!currentProfile) return false;
       return authService.hasPermission(currentProfile.role, permission);
     },
-    [currentProfile.role]
+    [currentProfile]
   );
 
   const isAtLeastRole = useCallback(
     (minRole: Role): boolean => {
+      if (!currentProfile) return false;
       return authService.isAtLeastRole(currentProfile.role, minRole);
     },
-    [currentProfile.role]
+    [currentProfile]
   );
 
   const canAccessLead = useCallback(
     (lead: Lead): boolean => {
+      if (!currentProfile) return false;
       return authService.canAccessLead(currentProfile, lead);
     },
     [currentProfile]

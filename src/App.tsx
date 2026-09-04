@@ -17,17 +17,21 @@ import { exportLeadsToCsv } from './utils/csvExport';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { PermissionGate } from './components/auth/PermissionGate';
 import { AuthModal } from './components/auth/AuthModal';
+import { LandingPage } from './components/auth/LandingPage';
 import { FloorBoardView } from './components/FloorBoardView';
 import { InventoryMatrixView } from './components/InventoryMatrixView';
-import { Plus, Kanban, CalendarCheck, BarChart3, LayoutGrid, Download, Users, Boxes } from 'lucide-react';
+import { Plus, Kanban, CalendarCheck, BarChart3, LayoutGrid, Download, Users, Boxes, LogOut } from 'lucide-react';
 
 type ViewMode = 'pipeline' | 'board' | 'follow_ups' | 'floor' | 'inventory' | 'analytics';
 
 function AppContent() {
   const {
+    session,
     currentProfile,
     profiles,
     switchProfile,
+    login,
+    logout,
     isAuthModalOpen,
     openAuthModal,
     closeAuthModal,
@@ -41,12 +45,15 @@ function AppContent() {
 
   // Scoped to active role (Simulating RLS)
   const scopedLeads = useMemo(
-    () => leadService.filterLeadsForRole(allLeads, currentProfile),
+    () => (currentProfile ? leadService.filterLeadsForRole(allLeads, currentProfile) : []),
     [allLeads, currentProfile]
   );
 
   const kpis = useMemo(
-    () => calculateKpis(scopedLeads, currentProfile.targetValue || 15_000_000),
+    () =>
+      currentProfile
+        ? calculateKpis(scopedLeads, currentProfile.targetValue || 15_000_000)
+        : calculateKpis([]),
     [scopedLeads, currentProfile]
   );
 
@@ -56,6 +63,7 @@ function AppContent() {
   }, [scopedLeads, selectedStage]);
 
   const loadFollowUps = useCallback(async () => {
+    if (!currentProfile) return;
     const data = await leadService.getEnrichedFollowUps(currentProfile);
     setFollowUps(data);
   }, [currentProfile]);
@@ -65,6 +73,7 @@ function AppContent() {
   }, [loadFollowUps]);
 
   const handleAdvance = async (leadId: string) => {
+    if (!currentProfile) return;
     try {
       const updated = await leadService.advanceStage(
         leadId,
@@ -91,6 +100,7 @@ function AppContent() {
   };
 
   const handleCompleteFollowUp = async (id: string) => {
+    if (!currentProfile) return;
     await leadService.completeFollowUp(id, currentProfile.id, currentProfile.fullName);
     await loadFollowUps();
     const refreshed = await leadService.getLeads();
@@ -98,11 +108,16 @@ function AppContent() {
   };
 
   const handleRescheduleFollowUp = async (id: string, newDate: string) => {
+    if (!currentProfile) return;
     await leadService.rescheduleFollowUp(id, newDate, currentProfile.id, currentProfile.fullName);
     await loadFollowUps();
     const refreshed = await leadService.getLeads();
     setAllLeads(refreshed);
   };
+
+  if (!session || !currentProfile) {
+    return <LandingPage onLoginSuccess={(p) => login(p.id)} />;
+  }
 
   return (
     <main className="min-h-screen bg-paper text-ink p-4 sm:p-6 pb-24 md:pb-6 font-sans">
@@ -147,6 +162,16 @@ function AppContent() {
               className="hidden md:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-control text-xs font-bold bg-cobalt hover:bg-cobalt-press text-white shadow-sm transition-colors min-h-[36px]"
             >
               <Plus className="size-4" /> Add Lead
+            </button>
+            <button
+              type="button"
+              onClick={logout}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-control text-xs font-semibold bg-wash hover:bg-line text-sub hover:text-overdue border border-line transition-colors min-h-[36px]"
+              title="Sign Out / Lock Terminal"
+              aria-label="Sign Out / Lock Terminal"
+            >
+              <LogOut className="size-3.5" />
+              <span className="hidden sm:inline">Sign Out</span>
             </button>
           </div>
         </header>

@@ -14,6 +14,8 @@ describe('AutoPipeline - End-to-End User Journey Verification', () => {
     tradeInService.resetMockStore();
     upSystemService.resetMockStore();
     inventoryService.resetMockStore();
+    const defaultProfile = authService.getProfiles()[0];
+    authService.saveSession(authService.createSession(defaultProfile));
   });
 
   it('Journey 1: Dealership shell renders and enforces role-based scoping ladder', async () => {
@@ -564,5 +566,48 @@ describe('AutoPipeline - End-to-End User Journey Verification', () => {
     await waitFor(() => {
       expect(screen.getByText(/NO VIN ALLOCATED/i)).toBeInTheDocument();
     });
+  });
+
+  it('Journey 18: Dedicated Landing Page displays showroom gateway, authenticates via PIN, and signs out', async () => {
+    // 1. Clear session to force unauthenticated landing page
+    authService.clearSession();
+    render(<App />);
+
+    // 2. Landing Page is rendered
+    expect(await screen.findByText('Showroom Floor Operations Terminal')).toBeInTheDocument();
+    expect(screen.getByText('Automotive Dealership Sales Operating System')).toBeInTheDocument();
+    expect(screen.getByText('BGC Sales Cloud Online')).toBeInTheDocument();
+
+    // Consultant profiles are displayed on floor terminal
+    expect(screen.getByText('Showroom PIN Terminal')).toBeInTheDocument();
+    expect(screen.getAllByText('Paolo Morales').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('Camille Dizon').length).toBeGreaterThanOrEqual(1);
+
+    // 3. Select Paolo Morales and enter PIN 1111 via keypad
+    const paoloBtn = screen.getByRole('button', { name: /Paolo Morales/i });
+    fireEvent.click(paoloBtn);
+
+    // Press keypad 1, 1, 1, 1
+    const oneBtns = screen.getAllByRole('button', { name: '1' });
+    const oneKeypadBtn = oneBtns[0];
+    fireEvent.click(oneKeypadBtn);
+    fireEvent.click(oneKeypadBtn);
+    fireEvent.click(oneKeypadBtn);
+    fireEvent.click(oneKeypadBtn);
+
+    // Click Unlock Dealership Terminal
+    const unlockBtn = screen.getByRole('button', { name: /Unlock Dealership Terminal/i });
+    fireEvent.click(unlockBtn);
+
+    // 4. Authenticated dashboard renders
+    expect(await screen.findByText('All Scoped Leads')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Sign Out/i })).toBeInTheDocument();
+
+    // 5. Sign out / Lock terminal
+    const signOutBtn = screen.getByRole('button', { name: /Sign Out/i });
+    fireEvent.click(signOutBtn);
+
+    // 6. Returned to Landing Page
+    expect(await screen.findByText('Showroom Floor Operations Terminal')).toBeInTheDocument();
   });
 });

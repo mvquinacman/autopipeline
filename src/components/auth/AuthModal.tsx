@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { formatPeso } from '../../data/seed';
 import type { Profile } from '../../types/crm';
@@ -27,7 +27,9 @@ const HINT_PINS: Record<string, string> = {
 
 export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const { currentProfile, profiles, switchProfile } = useAuth();
-  const [selectedProfileId, setSelectedProfileId] = useState<string>(currentProfile.id);
+  const [selectedProfileId, setSelectedProfileId] = useState<string>(
+    currentProfile?.id || profiles[0]?.id || ''
+  );
   const [pin, setPin] = useState('');
   const [error, setError] = useState<string | null>(null);
 
@@ -128,7 +130,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {profiles.map((p) => {
               const isSelected = p.id === selectedProfileId;
-              const isCurrent = p.id === currentProfile.id;
+              const isCurrent = p.id === currentProfile?.id;
               return (
                 <button
                   key={p.id}
