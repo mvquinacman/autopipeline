@@ -778,4 +778,80 @@ describe('AutoPipeline - End-to-End User Journey Verification', () => {
 
     printSpy.mockRestore();
   });
+
+  it('Journey 22: Delivery Bay Turnover Releasing Ceremony, PDI Certification & Dealership Gate Pass Generation', async () => {
+    const printSpy = vi.spyOn(window, 'print').mockImplementation(() => {});
+
+    render(<App />);
+
+    // 1. Navigate to Delivery Bay tab in main navigation
+    const mainNav = screen.getByRole('navigation', { name: /Main Navigation/i });
+    const deliveryTab = within(mainNav).getByRole('button', { name: /Delivery Bay/i });
+    fireEvent.click(deliveryTab);
+
+    // 2. Verify Delivery Bay header & spec-sheet KPI strip
+    expect(await screen.findByText(/Delivery Bays & Vehicle Turnover Ceremony/i)).toBeInTheDocument();
+    expect(screen.getByText(/Scheduled Today/i)).toBeInTheDocument();
+    expect(screen.getByText(/PDI Inspected/i)).toBeInTheDocument();
+    expect(screen.getByText(/Release Kit Ready/i)).toBeInTheDocument();
+    expect(screen.getByText(/Gate Passes Issued/i)).toBeInTheDocument();
+    expect(screen.getByText(/Turnover CSI Score/i)).toBeInTheDocument();
+
+    // 3. Verify Delivery Bay cards render
+    expect(screen.getByText('BAY 01')).toBeInTheDocument();
+    expect(screen.getAllByText('Maria Santos').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/Toyota Fortuner 2.8 LTD/i).length).toBeGreaterThanOrEqual(1);
+
+    // 4. Open Turnover Ceremony for Bay 01
+    const enterCeremonyBtns = screen.getAllByRole('button', { name: /Enter Turnover Ceremony|Review Turnover/i });
+    fireEvent.click(enterCeremonyBtns[0]);
+
+    // 5. Verify Turnover Ceremony Modal renders
+    expect(await screen.findByRole('heading', { name: /Vehicle Turnover & Handover Ceremony/i })).toBeInTheDocument();
+    expect(screen.getByText(/Commemorative Delivery Ceremony/i)).toBeInTheDocument();
+    expect(screen.getByText(/48-Hour Customer Satisfaction Index/i)).toBeInTheDocument();
+
+    // 6. Switch to PDI Checklist tab and inspect items
+    const pdiTab = screen.getByRole('button', { name: /PDI Checklist/i });
+    fireEvent.click(pdiTab);
+    expect(await screen.findByText(/10-Point Technical PDI Certification/i)).toBeInTheDocument();
+    expect(screen.getByText(/Battery Cold Cranking & Terminal Voltage/i)).toBeInTheDocument();
+
+    // 7. Switch to Release Kit tab and inspect items
+    const kitTab = screen.getByRole('button', { name: /Handover Kit/i });
+    fireEvent.click(kitTab);
+    expect(await screen.findByText(/Mandatory Vehicle Release Kit/i)).toBeInTheDocument();
+    expect(screen.getByText(/2 Master Smart Keys/i)).toBeInTheDocument();
+
+    // 8. Switch back to Ceremony tab and issue Security Gate Pass
+    const ceremonyTab = screen.getByRole('button', { name: /^Turnover Ceremony$/i });
+    fireEvent.click(ceremonyTab);
+
+    const issueGatePassBtn = screen.getByRole('button', { name: /Issue Security Gate Pass/i });
+    fireEvent.click(issueGatePassBtn);
+
+    // 9. Verify Gate Pass Modal renders
+    expect(await screen.findByText(/Security Yard Clearance & Logistics Gate Pass/i)).toBeInTheDocument();
+    expect(screen.getByText(/AUTHORIZED EXIT/i)).toBeInTheDocument();
+    expect(screen.getByText(/Scan barcode at Gate 1 Main Exit/i)).toBeInTheDocument();
+
+    // 10. Click Print Gate Pass
+    const printGatePassBtn = screen.getByRole('button', { name: /Print Gate Pass/i });
+    fireEvent.click(printGatePassBtn);
+    expect(printSpy).toHaveBeenCalled();
+
+    // 11. Close Gate Pass Modal
+    const closeGatePassBtn = screen.getByRole('button', { name: /Close gate pass dialog/i });
+    fireEvent.click(closeGatePassBtn);
+
+    expect(screen.queryByText(/Security Yard Clearance & Logistics Gate Pass/i)).not.toBeInTheDocument();
+
+    // 12. Close Turnover Modal
+    const closeCeremonyBtn = screen.getByRole('button', { name: /Close handover modal/i });
+    fireEvent.click(closeCeremonyBtn);
+
+    expect(screen.queryByRole('heading', { name: /Vehicle Turnover & Handover Ceremony/i })).not.toBeInTheDocument();
+
+    printSpy.mockRestore();
+  });
 });

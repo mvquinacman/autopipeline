@@ -23,6 +23,7 @@ import { InventoryMatrixView } from './components/InventoryMatrixView';
 import { FiBoardView } from './components/FiBoardView';
 import { MultiBankMatrixModal } from './components/MultiBankMatrixModal';
 import { ServiceDriveView } from './components/ServiceDriveView';
+import { DeliveryBayView } from './components/DeliveryBayView';
 import {
   Plus,
   Kanban,
@@ -34,10 +35,11 @@ import {
   Boxes,
   Building2,
   Wrench,
+  Truck,
   LogOut,
 } from 'lucide-react';
 
-type ViewMode = 'pipeline' | 'board' | 'follow_ups' | 'floor' | 'inventory' | 'fi_desk' | 'service_drive' | 'analytics';
+type ViewMode = 'pipeline' | 'board' | 'follow_ups' | 'floor' | 'inventory' | 'fi_desk' | 'service_drive' | 'delivery' | 'analytics';
 
 function AppContent() {
   const {
@@ -269,6 +271,15 @@ function AppContent() {
           </button>
           <button
             type="button"
+            onClick={() => setCurrentView('delivery')}
+            className={`px-3 py-1.5 rounded-control text-xs font-bold transition-colors flex items-center gap-1.5 ${
+              currentView === 'delivery' ? 'bg-cobalt text-white shadow-sm' : 'bg-wash text-ink hover:bg-line'
+            }`}
+          >
+            <Truck className="size-3.5" /> Delivery Bay
+          </button>
+          <button
+            type="button"
             onClick={() => setCurrentView('analytics')}
             className={`px-3 py-1.5 rounded-control text-xs font-bold transition-colors flex items-center gap-1.5 ${
               currentView === 'analytics' ? 'bg-cobalt text-white shadow-sm' : 'bg-wash text-ink hover:bg-line'
@@ -374,6 +385,20 @@ function AppContent() {
             onLeadConverted={(newLead) => {
               setAllLeads((prev) => [newLead, ...prev]);
               setSelectedLead(newLead);
+              loadFollowUps();
+            }}
+          />
+        )}
+
+        {currentView === 'delivery' && (
+          <DeliveryBayView
+            currentProfile={currentProfile}
+            onOpenLead={(leadId) => {
+              const target = allLeads.find((l) => l.id === leadId);
+              if (target) setSelectedLead(target);
+            }}
+            onDeliveryCompleted={() => {
+              leadService.getLeads().then((refreshed) => setAllLeads(refreshed));
               loadFollowUps();
             }}
           />
@@ -488,6 +513,16 @@ function AppContent() {
         >
           <Wrench className="size-5" />
           <span className="text-[10px] uppercase font-bold mt-1">Service</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setCurrentView('delivery')}
+          className={`flex-1 flex flex-col items-center justify-center py-1 transition-colors min-w-[54px] ${
+            currentView === 'delivery' ? 'text-cobalt font-bold' : 'text-sub hover:text-ink'
+          }`}
+        >
+          <Truck className="size-5" />
+          <span className="text-[10px] uppercase font-bold mt-1">Delivery</span>
         </button>
         <button
           type="button"

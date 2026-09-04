@@ -18,6 +18,10 @@ import type { VehicleStock } from '../types/inventory';
 import { MultiBankMatrixModal } from './MultiBankMatrixModal';
 import { multiBankService } from '../services/multiBankService';
 import { VehicleSalesOrderModal } from './VehicleSalesOrderModal';
+import { TurnoverCeremonyModal } from './delivery/TurnoverCeremonyModal';
+import { deliveryService } from '../services/deliveryService';
+import { STANDARD_PDI_ITEMS, STANDARD_HANDOVER_KIT } from '../data/seedDelivery';
+import type { DeliveryBayStatus } from '../types/delivery';
 import { PermissionGate } from './auth/PermissionGate';
 import {
   X,
@@ -38,6 +42,7 @@ import {
   Unlock,
   Building2,
   CheckCircle2,
+  Truck,
 } from 'lucide-react';
 
 interface LeadDetailDrawerProps {
@@ -66,6 +71,7 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
   const [showAllocateModal, setShowAllocateModal] = useState(false);
   const [showMultiBankModal, setShowMultiBankModal] = useState(false);
   const [showVsoModal, setShowVsoModal] = useState(false);
+  const [showDeliveryModal, setShowDeliveryModal] = useState(false);
   const [newNote, setNewNote] = useState('');
   const [isAddingNote, setIsAddingNote] = useState(false);
 
@@ -81,6 +87,34 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
       (lead.allocatedVehicleId ? inventoryService.getVehicleById(lead.allocatedVehicleId) : null)
     );
   }, [lead, activities]);
+
+  const deliveryAppointment = useMemo(() => {
+    if (!lead) return null;
+    const existing = deliveryService.getAppointmentByLeadId(lead.id);
+    if (existing) return existing;
+    const suffix = lead.id.slice(-4).toUpperCase();
+    return {
+      id: `del-${lead.id}`,
+      bayNumber: 1 as const,
+      leadId: lead.id,
+      customerName: lead.customerName,
+      customerPhone: lead.customerPhone,
+      modelInterest: lead.modelInterest,
+      allocatedVehicleId: lead.allocatedVehicleId,
+      vin: allocatedVehicle ? allocatedVehicle.vin : `MR0BA3CD4R${suffix}9812`,
+      engineNumber: allocatedVehicle ? allocatedVehicle.engineNumber : `1GD-FTV-${suffix}892`,
+      conductionSticker: `W0${suffix}`,
+      color: allocatedVehicle ? allocatedVehicle.color : 'Platinum White Pearl',
+      salesConsultantName: lead.agentName || currentProfile.fullName,
+      scheduledTime: 'Today • 2:00 PM',
+      status: (lead.stage === 'released' ? 'released' : 'pdi_ready') as DeliveryBayStatus,
+      pdiChecklist: STANDARD_PDI_ITEMS,
+      handoverKit: STANDARD_HANDOVER_KIT,
+      qcInspectorName: 'Ronaldo Cruz (QC Lead)',
+      qcSignedAt: new Date().toISOString(),
+      ribbonColor: 'red' as const,
+    };
+  }, [lead, allocatedVehicle, activities, currentProfile]);
 
   const bankOffers = useMemo(() => {
     if (!lead) return [];
@@ -695,6 +729,14 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
                 <Building2 className="size-4 text-cobalt group-hover:scale-110 transition-transform" />
                 <span className="text-[11px] font-bold">Bank Matrix</span>
               </button>
+              <button
+                type="button"
+                onClick={() => setShowDeliveryModal(true)}
+                className="flex flex-col items-center justify-center p-2.5 rounded-control border border-line bg-wash hover:bg-line/60 text-ink text-center gap-1 transition-colors group"
+              >
+                <Truck className="size-4 text-cobalt group-hover:scale-110 transition-transform" />
+                <span className="text-[11px] font-bold">Delivery Bay</span>
+              </button>
             </div>
           </div>
 
@@ -742,6 +784,20 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
         onOrderGenerated={async () => {
           const refreshed = await leadService.getActivities(lead.id);
           setActivities(refreshed);
+        }}
+      />
+
+      <TurnoverCeremonyModal
+        isOpen={showDeliveryModal}
+        appointment={deliveryAppointment}
+        currentProfile={currentProfile}
+        onClose={() => setShowDeliveryModal(false)}
+        onAppointmentUpdated={async () => {
+          const refreshed = await leadService.getActivities(lead.id);
+          setActivities(refreshed);
+          const leads = await leadService.getLeads();
+          const updated = leads.find((l) => l.id === lead.id);
+          if (updated) onLeadUpdated(updated);
         }}
       />
 
