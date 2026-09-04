@@ -74,9 +74,15 @@ export const TopNav: React.FC<TopNavProps> = ({ currentView, onSelectView, overd
 
       {/* Deal Desks Dropdown (Interactive Click + Hover) */}
       <div ref={dropdownRef} className="relative" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
-        <button type="button" onClick={() => setIsOpen((p) => !p)} aria-haspopup="menu" aria-expanded={isVisible} className={btnStyle(isDeskActive)}>
-          <Layers className="size-3.5" />
-          <span>{isDeskActive && activeDesk ? `Desk: ${activeDesk.label}` : 'Deal Desks'}</span>
+        <button
+          type="button"
+          onClick={() => setIsOpen((p) => !p)}
+          aria-haspopup="menu"
+          aria-expanded={isVisible}
+          title={isDeskActive && activeDesk ? `Deal Desks: ${activeDesk.label}` : 'Deal Desks'}
+          className={btnStyle(isDeskActive)}
+        >
+          <Layers className="size-3.5" /> <span>Deal Desks</span>
           <ChevronDown className={`size-3 transition-transform duration-150 ${isVisible ? 'rotate-180' : ''}`} />
         </button>
         <div className={`absolute left-0 top-full pt-1 z-30 transition-all duration-150 ${
