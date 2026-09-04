@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-paper: #F5F6F3;
+  --color-card: #FFFFFF;
+  --color-line: #E1E5EA;
+  --color-wash: #EDF0F3;
+  --color-ink: #0F1826;
+  --color-sub: #5B6472;
+  --color-cobalt: #1E4FD6;
+  --color-cobalt-press: #1740B0;
+  --color-cobalt-tint: #E8EDFB;
+  --color-due: #E8A013;
+  --color-overdue: #D64545;
+  --color-won: #189A5A;
+  --color-lost: #8A93A3;
+  --color-stage-new: #8A93A3;
+  --color-stage-contacted: #2E7BD6;
+  --color-stage-showroom: #1E4FD6;
+  --color-stage-testdrive: #0E7490;
+  --color-stage-application: #E8A013;
+  --color-stage-approved: #189A5A;
+  --color-stage-released: #0F1826;
+  --radius-card: 10px;
+  --radius-control: 8px;
+}
+
+@layer utilities {
+  .clip-chevron {
+    clip-path: polygon(0% 0%, calc(100% - 12px) 0%, 100% 50%, calc(100% - 12px) 100%, 0% 100%, 12px 50%);
+  }
+
+  .clip-chevron-first {
+    clip-path: polygon(0% 0%, calc(100% - 12px) 0%, 100% 50%, calc(100% - 12px) 100%, 0% 100%);
+  }
+
+  .clip-chevron-last {
+    clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%, 12px 50%);
+  }
+
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+}
