@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Profile, Lead } from '../types/crm';
 import { leadService, DuplicateCheckResult } from '../services/leadService';
-import { AlertCircle, CheckCircle2, UserPlus, X } from 'lucide-react';
+import { DuplicateGuardBanner } from './DuplicateGuardBanner';
+import { CheckCircle2, UserPlus, X } from 'lucide-react';
 
 interface AddLeadModalProps {
   isOpen: boolean;
@@ -135,28 +136,11 @@ export const AddLeadModal: React.FC<AddLeadModalProps> = ({
           </div>
 
           {/* Live Duplicate Guard Warning Banner */}
-          {duplicateCheck.isDuplicate && (
-            <div className="p-3 bg-due/10 border border-due/30 rounded-control space-y-2">
-              <div className="flex items-start gap-2 text-due font-semibold">
-                <AlertCircle className="size-4 shrink-0 mt-0.5" />
-                <div>
-                  <p>Possible Duplicate Lead Detected!</p>
-                  <p className="text-[11px] font-normal text-ink mt-0.5">
-                    Phone matches active lead owned by <span className="font-semibold">{duplicateCheck.existingLead?.agentName}</span> in stage <span className="font-semibold uppercase">{duplicateCheck.existingLead?.stage}</span>.
-                  </p>
-                </div>
-              </div>
-              <label className="flex items-center gap-2 pt-1 border-t border-due/20 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={allowOverride}
-                  onChange={(e) => setAllowOverride(e.target.checked)}
-                  className="rounded border-due text-cobalt focus:ring-cobalt"
-                />
-                <span className="text-[11px] font-semibold text-ink">I confirm this is a separate transaction (Override Guard)</span>
-              </label>
-            </div>
-          )}
+          <DuplicateGuardBanner
+            duplicateCheck={duplicateCheck}
+            allowOverride={allowOverride}
+            onToggleOverride={setAllowOverride}
+          />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
