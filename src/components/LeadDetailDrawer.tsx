@@ -5,7 +5,21 @@ import { formatPeso } from '../data/seed';
 import { StatusPill } from './StatusPill';
 import { ActivityTimeline } from './ActivityTimeline';
 import { MarkLostDialog } from './MarkLostDialog';
-import { X, ChevronRight, RotateCcw, Ban, PhoneCall, PlusCircle, UserCheck } from 'lucide-react';
+import { FinancingCalculatorModal } from './FinancingCalculatorModal';
+import { QuotationModal } from './QuotationModal';
+import { TestDriveModal } from './TestDriveModal';
+import {
+  X,
+  ChevronRight,
+  RotateCcw,
+  Ban,
+  PhoneCall,
+  PlusCircle,
+  UserCheck,
+  Calculator,
+  FileText,
+  Compass,
+} from 'lucide-react';
 
 interface LeadDetailDrawerProps {
   lead: Lead | null;
@@ -25,6 +39,9 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loadingActivities, setLoadingActivities] = useState(false);
   const [showLostDialog, setShowLostDialog] = useState(false);
+  const [showFinancingModal, setShowFinancingModal] = useState(false);
+  const [showQuotationModal, setShowQuotationModal] = useState(false);
+  const [showTestDriveModal, setShowTestDriveModal] = useState(false);
   const [newNote, setNewNote] = useState('');
   const [isAddingNote, setIsAddingNote] = useState(false);
 
@@ -113,6 +130,35 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
     );
     onLeadUpdated(updated);
     const refreshed = await leadService.getActivities(lead.id);
+    setActivities(refreshed);
+  };
+
+  const handleSaveFinancingQuote = async (leadId: string, note: string) => {
+    await leadService.addActivity(
+      leadId,
+      currentProfile.id,
+      currentProfile.fullName,
+      'quote',
+      note
+    );
+    const refreshed = await leadService.getActivities(leadId);
+    setActivities(refreshed);
+  };
+
+  const handleScheduleTestDrive = async (
+    leadId: string,
+    unitName: string,
+    date: string,
+    licenseNo: string
+  ) => {
+    await leadService.addActivity(
+      leadId,
+      currentProfile.id,
+      currentProfile.fullName,
+      'test_drive',
+      `Test drive booked on ${unitName} for ${new Date(date).toLocaleString()} (License: ${licenseNo})`
+    );
+    const refreshed = await leadService.getActivities(leadId);
     setActivities(refreshed);
   };
 
@@ -256,6 +302,37 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
             )}
           </div>
 
+          {/* Showroom Deal Tools */}
+          <div className="space-y-2">
+            <span className="text-[10.5px] uppercase font-bold text-sub tracking-wider">Showroom Deal Tools</span>
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                type="button"
+                onClick={() => setShowFinancingModal(true)}
+                className="flex flex-col items-center justify-center p-2.5 rounded-control border border-line bg-wash hover:bg-line/60 text-ink text-center gap-1 transition-colors group"
+              >
+                <Calculator className="size-4 text-cobalt group-hover:scale-110 transition-transform" />
+                <span className="text-[11px] font-bold">F&amp;I Loan Calc</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowQuotationModal(true)}
+                className="flex flex-col items-center justify-center p-2.5 rounded-control border border-line bg-wash hover:bg-line/60 text-ink text-center gap-1 transition-colors group"
+              >
+                <FileText className="size-4 text-cobalt group-hover:scale-110 transition-transform" />
+                <span className="text-[11px] font-bold">Print Quote</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowTestDriveModal(true)}
+                className="flex flex-col items-center justify-center p-2.5 rounded-control border border-line bg-wash hover:bg-line/60 text-ink text-center gap-1 transition-colors group"
+              >
+                <Compass className="size-4 text-cobalt group-hover:scale-110 transition-transform" />
+                <span className="text-[11px] font-bold">Book Test Drive</span>
+              </button>
+            </div>
+          </div>
+
           {/* Audit Timeline */}
           <div className="space-y-3 pt-2">
             <span className="text-[10.5px] uppercase font-bold text-sub tracking-wider">Audit Trail & Activities</span>
@@ -269,6 +346,26 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
         leadTitle={`${lead.customerName} (${lead.modelInterest})`}
         onClose={() => setShowLostDialog(false)}
         onConfirm={handleConfirmLost}
+      />
+
+      <FinancingCalculatorModal
+        isOpen={showFinancingModal}
+        lead={lead}
+        onClose={() => setShowFinancingModal(false)}
+        onSaveQuotation={handleSaveFinancingQuote}
+      />
+
+      <QuotationModal
+        isOpen={showQuotationModal}
+        lead={lead}
+        onClose={() => setShowQuotationModal(false)}
+      />
+
+      <TestDriveModal
+        isOpen={showTestDriveModal}
+        lead={lead}
+        onClose={() => setShowTestDriveModal(false)}
+        onScheduleTestDrive={handleScheduleTestDrive}
       />
     </div>
   );

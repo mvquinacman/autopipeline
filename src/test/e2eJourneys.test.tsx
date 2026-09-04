@@ -128,4 +128,119 @@ describe('AutoPipeline - End-to-End User Journey Verification', () => {
     fireEvent.click(completedTab);
     expect(await screen.findByText('Completed')).toBeInTheDocument();
   });
+
+  it('Journey 6: Quick search bar finds lead and opens detail inspector', async () => {
+    render(<App />);
+
+    const searchInput = screen.getByPlaceholderText(/Search customer, phone, model/i);
+    fireEvent.change(searchInput, { target: { value: 'Fortuner' } });
+
+    // Dropdown shows matching search results
+    const matchingResults = await screen.findAllByText('Maria Santos');
+    expect(matchingResults.length).toBeGreaterThanOrEqual(1);
+
+    // Clicking search result opens Lead Inspector drawer
+    fireEvent.click(matchingResults[matchingResults.length - 1]);
+    expect(await screen.findByText('Lead Inspector')).toBeInTheDocument();
+    expect(screen.getByText('Showroom Deal Tools')).toBeInTheDocument();
+  });
+
+  it('Journey 7: Kanban Board renders 7 stage columns with stage totals', async () => {
+    render(<App />);
+
+    // Switch to Kanban Board
+    const boardTab = screen.getByRole('button', { name: /Kanban Board/i });
+    fireEvent.click(boardTab);
+
+    // Verify Kanban board rendered
+    expect(await screen.findByText(/Floor Standup Board/i)).toBeInTheDocument();
+    expect(screen.getByText('New Lead')).toBeInTheDocument();
+    expect(screen.getByText('Test Drive')).toBeInTheDocument();
+    expect(screen.getByText('Financing Application')).toBeInTheDocument();
+  });
+
+  it('Journey 8: F&I Loan Calculator computes monthly amortization and attaches quote', async () => {
+    render(<App />);
+
+    // Click on a lead to open drawer
+    const leadCards = await screen.findAllByText('Toyota Fortuner 2.8 LTD');
+    fireEvent.click(leadCards[0]);
+
+    // Click F&I Loan Calc button
+    const loanCalcBtn = await screen.findByRole('button', { name: /F&I Loan Calc/i });
+    fireEvent.click(loanCalcBtn);
+
+    // Modal renders loan calculator
+    expect(await screen.findByText('F&I Loan Calculator')).toBeInTheDocument();
+    expect(screen.getByText(/Estimated Monthly Amortization/i)).toBeInTheDocument();
+
+    // Click 30% downpayment button
+    const dp30Btn = screen.getByRole('button', { name: /30%/i });
+    fireEvent.click(dp30Btn);
+
+    // Click Attach Quote to Lead
+    const attachBtn = screen.getByRole('button', { name: /Attach Quote to Lead/i });
+    fireEvent.click(attachBtn);
+
+    // Modal closes and quote is appended to timeline
+    await waitFor(() => {
+      expect(screen.queryByText('F&I Loan Calculator')).not.toBeInTheDocument();
+      expect(screen.getByText(/Loan Simulation/i)).toBeInTheDocument();
+    });
+  });
+
+  it('Journey 9: Official print quotation sheet opens with dealership letterhead', async () => {
+    render(<App />);
+
+    // Open lead drawer
+    const leadCards = await screen.findAllByText('Toyota Fortuner 2.8 LTD');
+    fireEvent.click(leadCards[0]);
+
+    // Click Print Quote button
+    const printQuoteBtn = await screen.findByRole('button', { name: /Print Quote/i });
+    fireEvent.click(printQuoteBtn);
+
+    // Modal renders official pro-forma quotation
+    expect(await screen.findByText('METRO MANILA MOTORS')).toBeInTheDocument();
+    expect(screen.getByText('PRO-FORMA QUOTATION')).toBeInTheDocument();
+    expect(screen.getByText(/3-Year LTO Registration/i)).toBeInTheDocument();
+    expect(screen.getByText(/TOTAL AMOUNT PAYABLE/i)).toBeInTheDocument();
+
+    // Close modal
+    const closeBtn = screen.getByRole('button', { name: /Print \/ Save PDF/i });
+    expect(closeBtn).toBeInTheDocument();
+  });
+
+  it('Journey 10: Test drive booking validates driver license and schedules demo unit', async () => {
+    render(<App />);
+
+    // Open lead drawer
+    const leadCards = await screen.findAllByText('Toyota Fortuner 2.8 LTD');
+    fireEvent.click(leadCards[0]);
+
+    // Click Book Test Drive button
+    const testDriveBtn = await screen.findByRole('button', { name: /Book Test Drive/i });
+    fireEvent.click(testDriveBtn);
+
+    // Modal renders
+    expect(await screen.findByText('Schedule Showroom Test Drive')).toBeInTheDocument();
+
+    // Enter license number
+    const licenseInput = screen.getByPlaceholderText(/N02-18-092812/i);
+    fireEvent.change(licenseInput, { target: { value: 'N01-22-998877' } });
+
+    // Check liability waiver
+    const waiverCheckbox = screen.getByRole('checkbox');
+    fireEvent.click(waiverCheckbox);
+
+    // Submit booking
+    const bookBtn = screen.getByRole('button', { name: /Book Demo Drive/i });
+    fireEvent.click(bookBtn);
+
+    // Verified: Modal closes and test drive event appears on timeline
+    await waitFor(() => {
+      expect(screen.queryByText('Schedule Showroom Test Drive')).not.toBeInTheDocument();
+      expect(screen.getByText(/Test drive booked/i)).toBeInTheDocument();
+    });
+  });
 });

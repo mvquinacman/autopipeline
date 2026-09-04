@@ -10,10 +10,12 @@ import { AddLeadModal } from './components/AddLeadModal';
 import { ManagerPerformanceCard } from './components/ManagerPerformanceCard';
 import { FollowUpsHub } from './components/FollowUpsHub';
 import { FunnelAnalytics } from './components/FunnelAnalytics';
+import { QuickSearchBar } from './components/QuickSearchBar';
+import { KanbanBoard } from './components/KanbanBoard';
 import { leadService } from './services/leadService';
-import { Plus, Kanban, CalendarCheck, BarChart3 } from 'lucide-react';
+import { Plus, Kanban, CalendarCheck, BarChart3, LayoutGrid } from 'lucide-react';
 
-type ViewMode = 'pipeline' | 'follow_ups' | 'analytics';
+type ViewMode = 'pipeline' | 'board' | 'follow_ups' | 'analytics';
 
 export default function App() {
   const profiles = useMemo(() => leadService.getProfiles(), []);
@@ -106,6 +108,10 @@ export default function App() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5">
+            <QuickSearchBar
+              leads={scopedLeads}
+              onSelectLead={(l) => setSelectedLead(l)}
+            />
             <RoleSwitcher
               currentProfile={currentProfile}
               profiles={profiles}
@@ -131,6 +137,15 @@ export default function App() {
             }`}
           >
             <Kanban className="size-3.5" /> Pipeline
+          </button>
+          <button
+            type="button"
+            onClick={() => setCurrentView('board')}
+            className={`px-3 py-1.5 rounded-control text-xs font-bold transition-colors flex items-center gap-1.5 ${
+              currentView === 'board' ? 'bg-cobalt text-white shadow-sm' : 'bg-wash text-ink hover:bg-line'
+            }`}
+          >
+            <LayoutGrid className="size-3.5" /> Kanban Board
           </button>
           <button
             type="button"
@@ -196,6 +211,21 @@ export default function App() {
                 onSelectLead={(l) => setSelectedLead(l)}
               />
             </section>
+          </div>
+        )}
+
+        {currentView === 'board' && (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-sub">
+                Floor Standup Board ({scopedLeads.length} Leads)
+              </h2>
+            </div>
+            <KanbanBoard
+              leads={scopedLeads}
+              onSelectLead={(l) => setSelectedLead(l)}
+              onAdvanceLead={handleAdvance}
+            />
           </div>
         )}
 
