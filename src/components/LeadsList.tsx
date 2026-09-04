@@ -8,6 +8,7 @@ interface LeadsListProps {
   error?: string | null;
   onClearFilter?: () => void;
   onAdvanceStage?: (leadId: string) => void;
+  onSelectLead?: (lead: Lead) => void;
   onRetry?: () => void;
 }
 
@@ -17,6 +18,7 @@ export function LeadsList({
   error = null,
   onClearFilter,
   onAdvanceStage,
+  onSelectLead,
   onRetry,
 }: LeadsListProps) {
   if (isLoading) {
@@ -69,7 +71,12 @@ export function LeadsList({
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {leads.map((lead) => (
-        <LeadCard key={lead.id} lead={lead} onAdvanceStage={onAdvanceStage} />
+        <LeadCard
+          key={lead.id}
+          lead={lead}
+          onAdvanceStage={onAdvanceStage}
+          onSelectLead={onSelectLead}
+        />
       ))}
     </div>
   );

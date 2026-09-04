@@ -6,9 +6,10 @@ import { StatusPill } from './StatusPill';
 interface LeadCardProps {
   lead: Lead;
   onAdvanceStage?: (leadId: string) => void;
+  onSelectLead?: (lead: Lead) => void;
 }
 
-export function LeadCard({ lead, onAdvanceStage }: LeadCardProps) {
+export function LeadCard({ lead, onAdvanceStage, onSelectLead }: LeadCardProps) {
   const stageConfig = STAGES.find((s) => s.id === lead.stage);
   const isFinalStage = lead.stage === 'released' || lead.status !== 'active';
 
@@ -22,7 +23,10 @@ export function LeadCard({ lead, onAdvanceStage }: LeadCardProps) {
       : 'active';
 
   return (
-    <article className="bg-card border border-line rounded-card p-4 hover:border-cobalt transition-colors flex flex-col justify-between gap-3 focus-within:border-cobalt">
+    <article
+      onClick={() => onSelectLead?.(lead)}
+      className="bg-card border border-line rounded-card p-4 hover:border-cobalt transition-colors flex flex-col justify-between gap-3 focus-within:border-cobalt cursor-pointer group"
+    >
       <div>
         <div className="flex items-start justify-between gap-2 mb-1.5">
           <h3 className="font-bold text-[15px] text-ink truncate flex-1" title={lead.modelInterest}>
@@ -48,7 +52,10 @@ export function LeadCard({ lead, onAdvanceStage }: LeadCardProps) {
         {!isFinalStage ? (
           <button
             type="button"
-            onClick={() => onAdvanceStage?.(lead.id)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onAdvanceStage?.(lead.id);
+            }}
             aria-label={`Advance ${lead.customerName}'s lead to next stage`}
             className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1.5 rounded-control bg-wash hover:bg-cobalt-tint hover:text-cobalt text-ink transition-colors min-h-[44px] md:min-h-0 focus-visible:ring-2 focus-visible:ring-cobalt focus-visible:outline-none"
           >
