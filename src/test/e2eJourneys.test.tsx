@@ -4,12 +4,14 @@ import App from '../App';
 import { leadService } from '../services/leadService';
 import { tradeInService } from '../services/tradeInService';
 import { authService } from '../services/authService';
+import { upSystemService } from '../services/upSystemService';
 
 describe('AutoPipeline - End-to-End User Journey Verification', () => {
   beforeEach(() => {
     authService.clearSession();
     leadService.resetMockStore();
     tradeInService.resetMockStore();
+    upSystemService.resetMockStore();
   });
 
   it('Journey 1: Dealership shell renders and enforces role-based scoping ladder', async () => {
@@ -428,5 +430,67 @@ describe('AutoPipeline - End-to-End User Journey Verification', () => {
     // 5. Now Manager is active and Reassign dropdown is visible
     expect(screen.getByRole('combobox', { name: /Reassign lead/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Export CSV/i })).toBeInTheDocument();
+  });
+
+  it('Journey 16: Showroom Floor Board rotates up-system queue and assigns walk-in traffic', async () => {
+    render(<App />);
+    const mainNav = screen.getByRole('navigation', { name: /Main Navigation/i });
+
+    // 1. Navigate to Floor Board
+    const floorTab = within(mainNav).getByRole('button', { name: /Floor Board/i });
+    fireEvent.click(floorTab);
+
+    // Floor Board view renders
+    expect(await screen.findByRole('heading', { name: /Showroom Floor Board/i })).toBeInTheDocument();
+    expect(screen.getByText(/Active Floor Rotation Queue/i)).toBeInTheDocument();
+
+    // 2. Initial Up-Rotation Queue: Paolo Morales is #1 UP NEXT
+    expect(screen.getByText('Consultant Up Next')).toBeInTheDocument();
+    expect(screen.getAllByText('Paolo Morales').length).toBeGreaterThan(0);
+
+    // 3. Open Log Showroom Walk-In Modal
+    const logWalkInBtn = screen.getByRole('button', { name: /Log Showroom Walk-In/i });
+    fireEvent.click(logWalkInBtn);
+
+    const modalTitle = await screen.findByRole('heading', { name: /Log Showroom Walk-In/i });
+    const modal = modalTitle.closest('div.bg-card') as HTMLElement;
+    expect(within(modal).getAllByText(/Paolo Morales/i).length).toBeGreaterThanOrEqual(1);
+
+    // 4. Fill in prospect details
+    const nameInput = within(modal).getByPlaceholderText(/e\.g\. Eduardo Ramos/i);
+    const phoneInput = within(modal).getByPlaceholderText(/\+63 917 555 9876/i);
+    const modelInput = within(modal).getByPlaceholderText(/e\.g\. Toyota Land Cruiser Prado/i);
+
+    fireEvent.change(nameInput, { target: { value: 'Eduardo Ramos' } });
+    fireEvent.change(phoneInput, { target: { value: '0917-888-9999' } });
+    fireEvent.change(modelInput, { target: { value: 'Toyota Land Cruiser Prado' } });
+
+    // Submit consultation
+    const assignBtn = within(modal).getByRole('button', { name: /Assign to Paolo Morales/i });
+    fireEvent.click(assignBtn);
+
+    await waitFor(() => {
+      expect(screen.queryByRole('heading', { name: /Log Showroom Walk-In/i })).not.toBeInTheDocument();
+    });
+
+    // 5. Verify rotation & active consultation
+    // Camille Dizon should now be up next in queue
+    expect(screen.getAllByText('Camille Dizon').length).toBeGreaterThan(0);
+    // Eduardo Ramos should be in Active Client Consultations
+    expect(screen.getByText('Active Client Consultations')).toBeInTheDocument();
+    expect(screen.getAllByText('Eduardo Ramos').length).toBeGreaterThanOrEqual(2);
+    expect(screen.getAllByText('Toyota Land Cruiser Prado').length).toBeGreaterThanOrEqual(1);
+
+    // 6. Complete Consultation and return consultant to queue
+    const completeBtn = screen.getByRole('button', { name: /Complete & Return to Queue/i });
+    fireEvent.click(completeBtn);
+
+    // Active consultations should clear
+    await waitFor(() => {
+      expect(screen.queryByText('Active Client Consultations')).not.toBeInTheDocument();
+    });
+
+    // Paolo Morales is returned to the queue
+    expect(screen.getAllByText('Paolo Morales').length).toBeGreaterThan(0);
   });
 });

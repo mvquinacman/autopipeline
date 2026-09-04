@@ -17,9 +17,10 @@ import { exportLeadsToCsv } from './utils/csvExport';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { PermissionGate } from './components/auth/PermissionGate';
 import { AuthModal } from './components/auth/AuthModal';
-import { Plus, Kanban, CalendarCheck, BarChart3, LayoutGrid, Download } from 'lucide-react';
+import { FloorBoardView } from './components/FloorBoardView';
+import { Plus, Kanban, CalendarCheck, BarChart3, LayoutGrid, Download, Users } from 'lucide-react';
 
-type ViewMode = 'pipeline' | 'board' | 'follow_ups' | 'analytics';
+type ViewMode = 'pipeline' | 'board' | 'follow_ups' | 'floor' | 'analytics';
 
 function AppContent() {
   const {
@@ -185,6 +186,15 @@ function AppContent() {
           </button>
           <button
             type="button"
+            onClick={() => setCurrentView('floor')}
+            className={`px-3 py-1.5 rounded-control text-xs font-bold transition-colors flex items-center gap-1.5 ${
+              currentView === 'floor' ? 'bg-cobalt text-white shadow-sm' : 'bg-wash text-ink hover:bg-line'
+            }`}
+          >
+            <Users className="size-3.5" /> Floor Board
+          </button>
+          <button
+            type="button"
             onClick={() => setCurrentView('analytics')}
             className={`px-3 py-1.5 rounded-control text-xs font-bold transition-colors flex items-center gap-1.5 ${
               currentView === 'analytics' ? 'bg-cobalt text-white shadow-sm' : 'bg-wash text-ink hover:bg-line'
@@ -264,6 +274,10 @@ function AppContent() {
           />
         )}
 
+        {currentView === 'floor' && (
+          <FloorBoardView />
+        )}
+
         {currentView === 'analytics' && (
           <FunnelAnalytics leads={scopedLeads} />
         )}
@@ -333,6 +347,16 @@ function AppContent() {
             )}
           </div>
           <span className="text-[10px] uppercase font-bold mt-1">Follow-ups</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setCurrentView('floor')}
+          className={`flex-1 flex flex-col items-center justify-center py-1 transition-colors ${
+            currentView === 'floor' ? 'text-cobalt font-bold' : 'text-sub hover:text-ink'
+          }`}
+        >
+          <Users className="size-5" />
+          <span className="text-[10px] uppercase font-bold mt-1">Floor</span>
         </button>
         <button
           type="button"
