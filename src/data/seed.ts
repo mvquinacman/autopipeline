@@ -78,6 +78,8 @@ export const SEED_LEADS: Lead[] = [
     notes: 'Inquired via Facebook Messenger ad about White Pearl 4x4 LTD. Inquiring about 20% downpayment promo.',
     followUpDue: '2026-09-04T10:00:00Z',
     urgency: 'due_today',
+    tradeInId: 'ti-001',
+    netTradeInEquity: 330_000,
     createdAt: '2026-09-03T08:15:00Z',
     updatedAt: '2026-09-03T08:15:00Z',
   },

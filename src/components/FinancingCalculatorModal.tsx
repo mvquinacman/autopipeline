@@ -26,13 +26,15 @@ export function FinancingCalculatorModal({
 
   const calc = useMemo(() => {
     if (!lead) return null;
+    const tradeInEquity = lead.netTradeInEquity ?? 0;
     return financingService.calculate(
       lead.estValue,
       dpPercent,
       termMonths,
       bankId,
       includeInsurance,
-      includeChattel
+      includeChattel,
+      tradeInEquity
     );
   }, [lead, dpPercent, termMonths, bankId, includeInsurance, includeChattel]);
 
@@ -156,10 +158,27 @@ export function FinancingCalculatorModal({
               <span className="font-semibold tabular-nums text-ink">{formatPeso(calc.comprehensiveInsurance)}</span>
             </div>
           </div>
-          <div className="flex justify-between items-center pt-2 border-t border-line text-xs font-bold text-ink">
-            <span>Total Cash Outlay Required:</span>
-            <span className="text-sm font-display text-ink tabular-nums">{formatPeso(calc.totalCashOutlay)}</span>
-          </div>
+          {calc.tradeInEquityApplied ? (
+            <div className="space-y-1.5 pt-2 border-t border-line">
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-sub">Gross Cash Outlay:</span>
+                <span className="font-semibold tabular-nums text-ink">{formatPeso(calc.totalCashOutlay)}</span>
+              </div>
+              <div className="flex justify-between items-center text-xs text-won font-semibold">
+                <span>Less Trade-In Equity:</span>
+                <span className="font-display tabular-nums">-{formatPeso(calc.tradeInEquityApplied)}</span>
+              </div>
+              <div className="flex justify-between items-center pt-1 border-t border-line/60 text-xs font-bold text-ink">
+                <span>Net Drive-Away Cash Outlay:</span>
+                <span className="text-base font-display text-cobalt tabular-nums">{formatPeso(calc.netCashOutlayRequired)}</span>
+              </div>
+            </div>
+          ) : (
+            <div className="flex justify-between items-center pt-2 border-t border-line text-xs font-bold text-ink">
+              <span>Total Cash Outlay Required:</span>
+              <span className="text-sm font-display text-ink tabular-nums">{formatPeso(calc.totalCashOutlay)}</span>
+            </div>
+          )}
         </div>
 
         {/* Actions */}

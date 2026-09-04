@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Lead, Activity, Profile } from '../types/crm';
 import { leadService } from '../services/leadService';
+import { tradeInService } from '../services/tradeInService';
+import type { TradeInRecord } from '../types/tradeIn';
 import { formatPeso } from '../data/seed';
 import { StatusPill } from './StatusPill';
 import { ActivityTimeline } from './ActivityTimeline';
@@ -9,6 +11,7 @@ import { FinancingCalculatorModal } from './FinancingCalculatorModal';
 import { QuotationModal } from './QuotationModal';
 import { TestDriveModal } from './TestDriveModal';
 import { ViberScriptModal } from './ViberScriptModal';
+import { TradeInModal } from './TradeInModal';
 import {
   X,
   ChevronRight,
@@ -21,6 +24,7 @@ import {
   FileText,
   Compass,
   MessageSquare,
+  Repeat,
 } from 'lucide-react';
 
 interface LeadDetailDrawerProps {
@@ -45,8 +49,14 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
   const [showQuotationModal, setShowQuotationModal] = useState(false);
   const [showTestDriveModal, setShowTestDriveModal] = useState(false);
   const [showViberModal, setShowViberModal] = useState(false);
+  const [showTradeInModal, setShowTradeInModal] = useState(false);
   const [newNote, setNewNote] = useState('');
   const [isAddingNote, setIsAddingNote] = useState(false);
+
+  const tradeInRecord = useMemo(() => {
+    if (!lead) return null;
+    return tradeInService.getAppraisalByLead(lead.id);
+  }, [lead, activities]);
 
   useEffect(() => {
     if (!lead) return;
@@ -177,6 +187,24 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
     setActivities(refreshed);
   };
 
+  const handleSaveTradeInAppraisal = async (leadId: string, record: TradeInRecord) => {
+    await leadService.addActivity(
+      leadId,
+      currentProfile.id,
+      currentProfile.fullName,
+      'trade_in',
+      tradeInService.formatTimelineNote(record)
+    );
+    const updated = await leadService.updateLeadTradeIn(
+      leadId,
+      record.id,
+      record.netTradeInEquity
+    );
+    onLeadUpdated(updated);
+    const refreshed = await leadService.getActivities(leadId);
+    setActivities(refreshed);
+  };
+
   const isManagerOrOwner = currentProfile.role === 'manager' || currentProfile.role === 'dealer_principal';
 
   return (
@@ -234,6 +262,47 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
               </div>
             )}
           </div>
+
+          {/* Trade-In Vehicle Appraisal Card (if appraised) */}
+          {tradeInRecord && (
+            <div className="bg-paper border border-line rounded-control p-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Repeat className="size-4 text-cobalt shrink-0" />
+                  <span className="text-xs font-bold text-ink">
+                    {tradeInRecord.year} {tradeInRecord.make} {tradeInRecord.model}
+                  </span>
+                </div>
+                <span className="text-[10px] font-semibold text-cobalt bg-cobalt-tint px-2 py-0.5 rounded-full">
+                  Plate ***{tradeInRecord.plateEnding} ({tradeInRecord.codingDay})
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-xs pt-1 border-t border-line">
+                <div>
+                  <span className="text-sub text-[10px] uppercase block font-semibold">Gross Appraisal</span>
+                  <span className="font-semibold text-ink tabular-nums">{formatPeso(tradeInRecord.appraisedValue)}</span>
+                </div>
+                <div>
+                  <span className="text-sub text-[10px] uppercase block font-semibold">Net Equity Credit</span>
+                  <span className="font-display text-base font-bold text-won tabular-nums">
+                    {formatPeso(tradeInRecord.netTradeInEquity)}
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center justify-between pt-1 border-t border-line/60 text-[11px] text-sub">
+                <span>
+                  Condition: <strong className="capitalize text-ink">{tradeInRecord.condition}</strong> ({tradeInRecord.mileageKm.toLocaleString()} km)
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setShowTradeInModal(true)}
+                  className="text-cobalt font-semibold hover:underline"
+                >
+                  Edit Appraisal
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Pipeline Action Controls */}
           {lead.status === 'active' && (
@@ -320,7 +389,7 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
           {/* Showroom Deal Tools */}
           <div className="space-y-2">
             <span className="text-[10.5px] uppercase font-bold text-sub tracking-wider">Showroom Deal Tools</span>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
               <button
                 type="button"
                 onClick={() => setShowFinancingModal(true)}
@@ -328,6 +397,14 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
               >
                 <Calculator className="size-4 text-cobalt group-hover:scale-110 transition-transform" />
                 <span className="text-[11px] font-bold">F&amp;I Loan Calc</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowTradeInModal(true)}
+                className="flex flex-col items-center justify-center p-2.5 rounded-control border border-line bg-wash hover:bg-line/60 text-ink text-center gap-1 transition-colors group"
+              >
+                <Repeat className="size-4 text-cobalt group-hover:scale-110 transition-transform" />
+                <span className="text-[11px] font-bold">Trade-In Desk</span>
               </button>
               <button
                 type="button"
@@ -376,6 +453,13 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
         lead={lead}
         onClose={() => setShowFinancingModal(false)}
         onSaveQuotation={handleSaveFinancingQuote}
+      />
+
+      <TradeInModal
+        isOpen={showTradeInModal}
+        lead={lead}
+        onClose={() => setShowTradeInModal(false)}
+        onSaveAppraisal={handleSaveTradeInAppraisal}
       />
 
       <QuotationModal

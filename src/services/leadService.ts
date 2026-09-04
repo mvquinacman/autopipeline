@@ -340,6 +340,31 @@ export const leadService = {
   },
 
   /**
+   * Links a trade-in appraisal to a lead and records net trade-in equity
+   */
+  async updateLeadTradeIn(
+    leadId: string,
+    tradeInId: string,
+    netTradeInEquity: number
+  ): Promise<Lead> {
+    const leadIndex = inMemoryLeads.findIndex((l) => l.id === leadId);
+    if (leadIndex === -1) {
+      throw new Error(`Lead ${leadId} not found`);
+    }
+
+    const currentLead = inMemoryLeads[leadIndex];
+    const updated: Lead = {
+      ...currentLead,
+      tradeInId,
+      netTradeInEquity,
+      updatedAt: new Date().toISOString(),
+    };
+
+    inMemoryLeads[leadIndex] = updated;
+    return updated;
+  },
+
+  /**
    * Creates a new lead with validation and activity logging
    */
   async createLead(

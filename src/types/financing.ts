@@ -19,5 +19,7 @@ export interface FinancingCalculation {
   comprehensiveInsurance: number;
   ltoRegistrationFee: number;
   totalCashOutlay: number;
+  tradeInEquityApplied?: number;
+  netCashOutlayRequired: number;
   bankName: string;
 }

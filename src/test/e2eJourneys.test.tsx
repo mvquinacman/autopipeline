@@ -2,10 +2,12 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import App from '../App';
 import { leadService } from '../services/leadService';
+import { tradeInService } from '../services/tradeInService';
 
 describe('AutoPipeline - End-to-End User Journey Verification', () => {
   beforeEach(() => {
     leadService.resetMockStore();
+    tradeInService.resetMockStore();
   });
 
   it('Journey 1: Dealership shell renders and enforces role-based scoping ladder', async () => {
@@ -317,5 +319,66 @@ describe('AutoPipeline - End-to-End User Journey Verification', () => {
     await waitFor(() => {
       expect(screen.queryByRole('heading', { name: /Add New Lead/i })).not.toBeInTheDocument();
     });
+  });
+
+  it('Journey 14: Used Car Appraisal Desk evaluates trade-in, calculates net equity, and credits F&I financing', async () => {
+    render(<App />);
+
+    // Open lead drawer for Maria Santos (Toyota Fortuner)
+    const leadCards = await screen.findAllByText('Toyota Fortuner 2.8 LTD');
+    fireEvent.click(leadCards[0]);
+
+    expect(await screen.findByText('Lead Inspector')).toBeInTheDocument();
+
+    // Check preseeded Trade-In Card is visible in Lead Detail Drawer
+    expect(screen.getByText(/2020 Toyota Vios 1.3 E AT/i)).toBeInTheDocument();
+    expect(screen.getByText(/Plate \*\*\*4 \(Tuesday\)/i)).toBeInTheDocument();
+    expect(screen.getByText('₱330,000')).toBeInTheDocument();
+
+    // Open Trade-In Appraisal Desk Modal
+    const tradeInDeskBtn = screen.getByRole('button', { name: /Trade-In Desk/i });
+    fireEvent.click(tradeInDeskBtn);
+
+    expect(await screen.findByRole('heading', { name: /Trade-In Appraisal Desk/i })).toBeInTheDocument();
+
+    // Update appraised value and loan payoff
+    const grossValInput = screen.getByDisplayValue('450000');
+    fireEvent.change(grossValInput, { target: { value: '550000' } });
+
+    const loanInput = screen.getByDisplayValue('120000');
+    fireEvent.change(loanInput, { target: { value: '150000' } });
+
+    // Net Trade-In Equity is 550,000 - 150,000 = 400,000
+    expect(screen.getByText('₱400,000')).toBeInTheDocument();
+
+    // Save Appraisal
+    const saveBtn = screen.getByRole('button', { name: /Save Appraisal & Apply Credit/i });
+    fireEvent.click(saveBtn);
+
+    // Modal closes and Lead Detail Drawer updates with ₱400,000 net equity
+    await waitFor(() => {
+      expect(screen.queryByRole('heading', { name: /Trade-In Appraisal Desk/i })).not.toBeInTheDocument();
+    });
+    expect(screen.getByText('₱400,000')).toBeInTheDocument();
+
+    // Open F&I Loan Calculator to verify trade-in equity credit applied
+    const loanCalcBtn = screen.getByRole('button', { name: /F&I Loan Calc/i });
+    fireEvent.click(loanCalcBtn);
+
+    expect(await screen.findByRole('heading', { name: /F&I Loan Calculator/i })).toBeInTheDocument();
+    expect(screen.getByText(/Less Trade-In Equity:/i)).toBeInTheDocument();
+    expect(screen.getByText('-₱400,000')).toBeInTheDocument();
+    expect(screen.getByText(/Net Drive-Away Cash Outlay:/i)).toBeInTheDocument();
+
+    // Attach quote to lead
+    const attachQuoteBtn = screen.getByRole('button', { name: /Attach Quote to Lead/i });
+    fireEvent.click(attachQuoteBtn);
+
+    await waitFor(() => {
+      expect(screen.queryByRole('heading', { name: /F&I Loan Calculator/i })).not.toBeInTheDocument();
+    });
+
+    // Check audit trail recorded quote with trade-in credit
+    expect(screen.getByText(/Trade-In Credit: -₱400K/i)).toBeInTheDocument();
   });
 });

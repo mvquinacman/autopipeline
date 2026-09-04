@@ -27,4 +27,18 @@ describe('financingService - Loan & Amortization Calculations', () => {
     expect(note).toContain('20% DP');
     expect(note).toContain('48 mos');
   });
+
+  it('deducts trade-in equity from total cash outlay to calculate net cash outlay', () => {
+    // 2M vehicle, 20% DP = 400,000 DP, total cash outlay around 490k+
+    const withoutTradeIn = financingService.calculate(2_000_000, 20, 60, 'metrobank', true, true, 0);
+    const withTradeIn = financingService.calculate(2_000_000, 20, 60, 'metrobank', true, true, 300_000);
+
+    expect(withTradeIn.totalCashOutlay).toBe(withoutTradeIn.totalCashOutlay);
+    expect(withTradeIn.tradeInEquityApplied).toBe(300_000);
+    expect(withTradeIn.netCashOutlayRequired).toBe(withoutTradeIn.totalCashOutlay - 300_000);
+
+    const note = financingService.formatQuotationNote(withTradeIn);
+    expect(note).toContain('Trade-In Credit: -₱300K');
+    expect(note).toContain('Net Outlay:');
+  });
 });

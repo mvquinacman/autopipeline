@@ -35,7 +35,8 @@ export const financingService = {
     termMonths: LoanTerm = 60,
     bankId = 'metrobank',
     includeInsurance = true,
-    includeChattel = true
+    includeChattel = true,
+    tradeInEquity = 0
   ): FinancingCalculation {
     const bank = BANK_PRESETS.find((b) => b.id === bankId) || BANK_PRESETS[0];
     const annualRate = bank.rates[termMonths] ?? 8.5;
@@ -56,6 +57,8 @@ export const financingService = {
     const totalCashOutlay =
       downPaymentAmount + chattelMortgageFee + comprehensiveInsurance + ltoRegistrationFee;
 
+    const netCashOutlayRequired = Math.max(0, totalCashOutlay - tradeInEquity);
+
     return {
       vehiclePrice,
       downPaymentPercent,
@@ -68,14 +71,20 @@ export const financingService = {
       comprehensiveInsurance,
       ltoRegistrationFee,
       totalCashOutlay,
+      tradeInEquityApplied: tradeInEquity > 0 ? tradeInEquity : undefined,
+      netCashOutlayRequired,
       bankName: bank.name,
     };
   },
 
   formatQuotationNote(calc: FinancingCalculation): string {
+    const tradeInPart = calc.tradeInEquityApplied
+      ? ` | Trade-In Credit: -${formatPeso(calc.tradeInEquityApplied, true)} (Net Outlay: ${formatPeso(calc.netCashOutlayRequired, true)})`
+      : ` | Initial Outlay: ${formatPeso(calc.totalCashOutlay, true)}`;
+
     return (
       `Loan Simulation (${calc.bankName}): ${calc.downPaymentPercent}% DP (${formatPeso(calc.downPaymentAmount, true)}) ` +
-      `| ${calc.termMonths} mos @ ${formatPeso(calc.monthlyAmortization)}/mo | Initial Outlay: ${formatPeso(calc.totalCashOutlay, true)}`
+      `| ${calc.termMonths} mos @ ${formatPeso(calc.monthlyAmortization)}/mo${tradeInPart}`
     );
   },
 };

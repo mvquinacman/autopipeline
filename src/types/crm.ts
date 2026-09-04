@@ -50,6 +50,8 @@ export interface Lead {
   notes?: string;
   followUpDue?: string;
   urgency: Urgency;
+  tradeInId?: string;
+  netTradeInEquity?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -59,7 +61,7 @@ export interface Activity {
   leadId: string;
   actorId: string;
   actorName: string;
-  type: 'stage_change' | 'call' | 'note' | 'test_drive' | 'quote';
+  type: 'stage_change' | 'call' | 'note' | 'test_drive' | 'quote' | 'trade_in';
   detail: string;
   createdAt: string;
 }
