@@ -32,18 +32,28 @@ describe('AutoPipeline - End-to-End User Journey Verification', () => {
     // Default active profile is Agent Paolo Morales (7 leads scoped)
     expect(screen.getByText(/All Scoped Leads/)).toHaveTextContent('(7)');
 
-    // Switch role to Manager: Rafael Alcantara (14 team leads scoped)
-    const managerBtn = screen.getByRole('button', { name: /Rafael Alcantara/i });
-    fireEvent.click(managerBtn);
+    // Switch role to Manager: Rafael Alcantara via Terminal Auth Modal
+    const switchTerminalBtn = screen.getByRole('button', { name: /Open terminal authentication/i });
+    fireEvent.click(switchTerminalBtn);
+
+    const authModal1 = (await screen.findByRole('heading', { name: /Showroom Terminal Auth/i })).closest('div.bg-card') as HTMLElement;
+    const rafaelCard = within(authModal1).getByText('Rafael Alcantara');
+    fireEvent.click(rafaelCard);
+    const instantSwitchBtn1 = within(authModal1).getByRole('button', { name: /Instant Switch \(Demo\)/i });
+    fireEvent.click(instantSwitchBtn1);
 
     await waitFor(() => {
       expect(screen.getByText(/All Scoped Leads/)).toHaveTextContent('(14)');
       expect(screen.getByText('Team Alpha Performance')).toBeInTheDocument();
     });
 
-    // Switch role to Dealer Principal: Vicente Tan (14 dealership leads scoped)
-    const principalBtn = screen.getByRole('button', { name: /Vicente Tan/i });
-    fireEvent.click(principalBtn);
+    // Switch role to Dealer Principal: Vicente Tan via Terminal Auth Modal
+    fireEvent.click(screen.getByRole('button', { name: /Open terminal authentication/i }));
+    const authModal2 = (await screen.findByRole('heading', { name: /Showroom Terminal Auth/i })).closest('div.bg-card') as HTMLElement;
+    const vicenteCard = within(authModal2).getByText('Vicente Tan');
+    fireEvent.click(vicenteCard);
+    const instantSwitchBtn2 = within(authModal2).getByRole('button', { name: /Instant Switch \(Demo\)/i });
+    fireEvent.click(instantSwitchBtn2);
 
     await waitFor(() => {
       expect(screen.getByText(/All Scoped Leads/)).toHaveTextContent('(14)');
@@ -301,9 +311,15 @@ describe('AutoPipeline - End-to-End User Journey Verification', () => {
     // Agent role cannot export CSV
     expect(screen.queryByRole('button', { name: /Export CSV/i })).not.toBeInTheDocument();
 
-    // Switch to Manager (Rafael Alcantara) who has lead:export permission
-    const managerBtn = screen.getByRole('button', { name: /Rafael Alcantara/i });
-    fireEvent.click(managerBtn);
+    // Switch to Manager (Rafael Alcantara) who has lead:export permission via Terminal Auth
+    const switchTerminalBtn = screen.getByRole('button', { name: /Open terminal authentication/i });
+    fireEvent.click(switchTerminalBtn);
+
+    const authModal = (await screen.findByRole('heading', { name: /Showroom Terminal Auth/i })).closest('div.bg-card') as HTMLElement;
+    const rafaelCard = within(authModal).getByText('Rafael Alcantara');
+    fireEvent.click(rafaelCard);
+    const instantSwitchBtn = within(authModal).getByRole('button', { name: /Instant Switch \(Demo\)/i });
+    fireEvent.click(instantSwitchBtn);
 
     const exportBtn = await screen.findByRole('button', { name: /Export CSV/i });
     fireEvent.click(exportBtn);

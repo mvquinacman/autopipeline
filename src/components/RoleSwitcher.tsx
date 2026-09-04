@@ -1,19 +1,16 @@
 import React from 'react';
 import { Profile } from '../types/crm';
-import { formatPeso } from '../data/seed';
-import { ShieldCheck, User, Users, Lock } from 'lucide-react';
+import { ShieldCheck, User, Users, Lock, ChevronDown } from 'lucide-react';
 
 interface RoleSwitcherProps {
   currentProfile: Profile;
-  profiles: Profile[];
-  onSelectProfile: (profile: Profile) => void;
+  profiles?: Profile[];
+  onSelectProfile?: (profile: Profile) => void;
   onOpenAuthModal?: () => void;
 }
 
 export const RoleSwitcher: React.FC<RoleSwitcherProps> = ({
   currentProfile,
-  profiles,
-  onSelectProfile,
   onOpenAuthModal,
 }) => {
   const getRoleIcon = (role: Profile['role']) => {
@@ -27,58 +24,48 @@ export const RoleSwitcher: React.FC<RoleSwitcherProps> = ({
     }
   };
 
-  const getRoleLabel = (role: Profile['role']) => {
+  const getRoleBadge = (role: Profile['role']) => {
     switch (role) {
       case 'dealer_principal':
-        return 'Dealer Principal';
+        return (
+          <span className="text-[10px] font-bold text-won bg-won/10 px-2 py-0.5 rounded-full border border-won/20">
+            Dealer Principal
+          </span>
+        );
       case 'manager':
-        return 'Sales Manager';
+        return (
+          <span className="text-[10px] font-bold text-due bg-due/10 px-2 py-0.5 rounded-full border border-due/20">
+            Sales Manager
+          </span>
+        );
       default:
-        return 'Sales Agent';
+        return (
+          <span className="text-[10px] font-bold text-cobalt bg-cobalt-tint px-2 py-0.5 rounded-full border border-cobalt/20">
+            Sales Agent
+          </span>
+        );
     }
   };
 
   return (
-    <div className="flex items-center gap-2">
-      <div className="flex items-center bg-card border border-line rounded-control p-1 shadow-sm">
-        {profiles.map((p) => {
-          const isActive = p.id === currentProfile.id;
-          return (
-            <button
-              key={p.id}
-              type="button"
-              onClick={() => onSelectProfile(p)}
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-control text-xs font-medium transition-all ${
-                isActive
-                  ? 'bg-wash text-ink font-semibold shadow-sm border border-line'
-                  : 'text-sub hover:text-ink hover:bg-paper'
-              }`}
-              title={`${p.fullName} - Target: ${formatPeso(p.targetValue || 0, true)}`}
-            >
-              {getRoleIcon(p.role)}
-              <span className="hidden sm:inline">{p.fullName}</span>
-              <span className="text-[10px] text-sub uppercase font-bold tracking-wider sm:hidden">
-                {p.role === 'dealer_principal' ? 'Owner' : p.role}
-              </span>
-            </button>
-          );
-        })}
+    <button
+      type="button"
+      onClick={onOpenAuthModal}
+      aria-label="Open terminal authentication"
+      title={`Logged in as ${currentProfile.fullName}. Click to switch terminal.`}
+      className="flex items-center gap-2 px-3 py-1.5 rounded-control bg-card hover:bg-wash border border-line hover:border-cobalt text-ink transition-all shadow-sm min-h-[36px] group"
+    >
+      <div className="size-6 rounded-full bg-wash flex items-center justify-center shrink-0 border border-line">
+        {getRoleIcon(currentProfile.role)}
       </div>
-      {onOpenAuthModal && (
-        <button
-          type="button"
-          onClick={onOpenAuthModal}
-          className="p-1.5 rounded-control text-sub hover:text-ink hover:bg-wash border border-line bg-card shadow-sm transition-colors"
-          title="Terminal Auth & PIN Lock"
-          aria-label="Open terminal authentication"
-        >
-          <Lock className="size-3.5 text-cobalt" />
-        </button>
-      )}
-      <div className="hidden lg:flex items-center text-xs text-sub px-2 border-l border-line">
-        <span className="font-semibold text-ink mr-1">Scope:</span>
-        {getRoleLabel(currentProfile.role)}
+      <div className="flex items-center gap-1.5 text-left">
+        <span className="text-xs font-bold text-ink">{currentProfile.fullName}</span>
+        {getRoleBadge(currentProfile.role)}
       </div>
-    </div>
+      <div className="flex items-center gap-1 text-sub group-hover:text-cobalt ml-1">
+        <Lock className="size-3" />
+        <ChevronDown className="size-3" />
+      </div>
+    </button>
   );
 };
