@@ -3,9 +3,11 @@ import { render, screen, fireEvent, waitFor, within } from '@testing-library/rea
 import App from '../App';
 import { leadService } from '../services/leadService';
 import { tradeInService } from '../services/tradeInService';
+import { authService } from '../services/authService';
 
 describe('AutoPipeline - End-to-End User Journey Verification', () => {
   beforeEach(() => {
+    authService.clearSession();
     leadService.resetMockStore();
     tradeInService.resetMockStore();
   });
@@ -290,7 +292,14 @@ describe('AutoPipeline - End-to-End User Journey Verification', () => {
 
     render(<App />);
 
-    const exportBtn = screen.getByRole('button', { name: /Export CSV/i });
+    // Agent role cannot export CSV
+    expect(screen.queryByRole('button', { name: /Export CSV/i })).not.toBeInTheDocument();
+
+    // Switch to Manager (Rafael Alcantara) who has lead:export permission
+    const managerBtn = screen.getByRole('button', { name: /Rafael Alcantara/i });
+    fireEvent.click(managerBtn);
+
+    const exportBtn = await screen.findByRole('button', { name: /Export CSV/i });
     fireEvent.click(exportBtn);
 
     expect(mockCreateObjectURL).toHaveBeenCalled();
@@ -380,5 +389,44 @@ describe('AutoPipeline - End-to-End User Journey Verification', () => {
 
     // Check audit trail recorded quote with trade-in credit
     expect(screen.getByText(/Trade-In Credit: -₱400K/i)).toBeInTheDocument();
+  });
+
+  it('Journey 15: User Authentication Hierarchy enforces RBAC and Showroom Terminal Auth Modal switches profiles', async () => {
+    render(<App />);
+
+    // 1. Initially Agent (Paolo Morales) is active
+    expect(screen.getByText('Paolo Morales')).toBeInTheDocument();
+
+    // 2. Open Lead Drawer - Agent cannot reassign lead
+    const leadCards = await screen.findAllByText('Toyota Fortuner 2.8 LTD');
+    fireEvent.click(leadCards[0]);
+    expect(await screen.findByText('Lead Inspector')).toBeInTheDocument();
+    expect(screen.queryByRole('combobox', { name: /Reassign lead/i })).not.toBeInTheDocument();
+
+    // 3. Open Showroom Terminal Auth modal via Lock button
+    const lockBtn = screen.getByRole('button', { name: /Open terminal authentication/i });
+    fireEvent.click(lockBtn);
+
+    const heading = await screen.findByRole('heading', { name: /Showroom Terminal Auth/i });
+    const authModal = heading.closest('div.bg-card') as HTMLElement;
+
+    // 4. Select Rafael Alcantara (Manager) inside modal
+    const rafaelCard = within(authModal).getByText('Rafael Alcantara');
+    fireEvent.click(rafaelCard);
+
+    // Enter valid manager PIN: 3333
+    const pinInput = screen.getByPlaceholderText(/e\.g\. 3333/i);
+    fireEvent.change(pinInput, { target: { value: '3333' } });
+
+    const authBtn = screen.getByRole('button', { name: /Authenticate & Switch/i });
+    fireEvent.click(authBtn);
+
+    await waitFor(() => {
+      expect(screen.queryByRole('heading', { name: /Showroom Terminal Auth/i })).not.toBeInTheDocument();
+    });
+
+    // 5. Now Manager is active and Reassign dropdown is visible
+    expect(screen.getByRole('combobox', { name: /Reassign lead/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Export CSV/i })).toBeInTheDocument();
   });
 });

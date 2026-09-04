@@ -12,6 +12,7 @@ import { QuotationModal } from './QuotationModal';
 import { TestDriveModal } from './TestDriveModal';
 import { ViberScriptModal } from './ViberScriptModal';
 import { TradeInModal } from './TradeInModal';
+import { PermissionGate } from './auth/PermissionGate';
 import {
   X,
   ChevronRight,
@@ -205,8 +206,6 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
     setActivities(refreshed);
   };
 
-  const isManagerOrOwner = currentProfile.role === 'manager' || currentProfile.role === 'dealer_principal';
-
   return (
     <div className="fixed inset-0 z-40 flex justify-end bg-ink/40 backdrop-blur-sm animate-fade-in">
       <div className="w-full sm:max-w-lg bg-card border-l border-line h-full flex flex-col shadow-2xl overflow-hidden">
@@ -246,11 +245,12 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
               <span className="ml-auto text-[11px] text-sub font-medium">Agent: {lead.agentName}</span>
             </div>
 
-            {isManagerOrOwner && (
+            <PermissionGate permission="lead:reassign">
               <div className="pt-2 border-t border-line flex items-center gap-2 text-xs">
                 <UserCheck className="size-3.5 text-cobalt shrink-0" />
                 <span className="text-sub font-semibold">Reassign:</span>
                 <select
+                  aria-label="Reassign lead"
                   value={lead.agentId}
                   onChange={(e) => handleReassign(e.target.value)}
                   className="h-7 px-2 text-xs bg-card border border-line rounded text-ink focus:ring-1 focus:ring-cobalt"
@@ -260,7 +260,7 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
                   ))}
                 </select>
               </div>
-            )}
+            </PermissionGate>
           </div>
 
           {/* Trade-In Vehicle Appraisal Card (if appraised) */}

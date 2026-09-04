@@ -1,18 +1,20 @@
 import React from 'react';
 import { Profile } from '../types/crm';
 import { formatPeso } from '../data/seed';
-import { ShieldCheck, User, Users } from 'lucide-react';
+import { ShieldCheck, User, Users, Lock } from 'lucide-react';
 
 interface RoleSwitcherProps {
   currentProfile: Profile;
   profiles: Profile[];
   onSelectProfile: (profile: Profile) => void;
+  onOpenAuthModal?: () => void;
 }
 
 export const RoleSwitcher: React.FC<RoleSwitcherProps> = ({
   currentProfile,
   profiles,
   onSelectProfile,
+  onOpenAuthModal,
 }) => {
   const getRoleIcon = (role: Profile['role']) => {
     switch (role) {
@@ -62,6 +64,17 @@ export const RoleSwitcher: React.FC<RoleSwitcherProps> = ({
           );
         })}
       </div>
+      {onOpenAuthModal && (
+        <button
+          type="button"
+          onClick={onOpenAuthModal}
+          className="p-1.5 rounded-control text-sub hover:text-ink hover:bg-wash border border-line bg-card shadow-sm transition-colors"
+          title="Terminal Auth & PIN Lock"
+          aria-label="Open terminal authentication"
+        >
+          <Lock className="size-3.5 text-cobalt" />
+        </button>
+      )}
       <div className="hidden lg:flex items-center text-xs text-sub px-2 border-l border-line">
         <span className="font-semibold text-ink mr-1">Scope:</span>
         {getRoleLabel(currentProfile.role)}

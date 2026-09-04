@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { calculateKpis, SEED_LEADS } from './data/seed';
-import type { Lead, Stage, Profile, FollowUpWithLead } from './types/crm';
+import type { Lead, Stage, FollowUpWithLead } from './types/crm';
 import { KpiStrip } from './components/KpiStrip';
 import { StageRail } from './components/StageRail';
 import { LeadsList } from './components/LeadsList';
@@ -14,13 +14,22 @@ import { QuickSearchBar } from './components/QuickSearchBar';
 import { KanbanBoard } from './components/KanbanBoard';
 import { leadService } from './services/leadService';
 import { exportLeadsToCsv } from './utils/csvExport';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import { PermissionGate } from './components/auth/PermissionGate';
+import { AuthModal } from './components/auth/AuthModal';
 import { Plus, Kanban, CalendarCheck, BarChart3, LayoutGrid, Download } from 'lucide-react';
 
 type ViewMode = 'pipeline' | 'board' | 'follow_ups' | 'analytics';
 
-export default function App() {
-  const profiles = useMemo(() => leadService.getProfiles(), []);
-  const [currentProfile, setCurrentProfile] = useState<Profile>(profiles[0]);
+function AppContent() {
+  const {
+    currentProfile,
+    profiles,
+    switchProfile,
+    isAuthModalOpen,
+    openAuthModal,
+    closeAuthModal,
+  } = useAuth();
   const [currentView, setCurrentView] = useState<ViewMode>('pipeline');
   const [allLeads, setAllLeads] = useState<Lead[]>(SEED_LEADS);
   const [followUps, setFollowUps] = useState<FollowUpWithLead[]>([]);
@@ -116,17 +125,20 @@ export default function App() {
             <RoleSwitcher
               currentProfile={currentProfile}
               profiles={profiles}
-              onSelectProfile={setCurrentProfile}
+              onSelectProfile={(p) => switchProfile(p.id)}
+              onOpenAuthModal={openAuthModal}
             />
-            <button
-              type="button"
-              onClick={() => exportLeadsToCsv(filteredLeads, `autopipeline-leads-${currentProfile.role}.csv`)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-control text-xs font-semibold bg-wash hover:bg-line text-ink border border-line transition-colors min-h-[36px]"
-              title="Export filtered pipeline leads to CSV"
-            >
-              <Download className="size-3.5 text-sub" />
-              <span className="hidden sm:inline">Export CSV</span>
-            </button>
+            <PermissionGate permission="lead:export">
+              <button
+                type="button"
+                onClick={() => exportLeadsToCsv(filteredLeads, `autopipeline-leads-${currentProfile.role}.csv`)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-control text-xs font-semibold bg-wash hover:bg-line text-ink border border-line transition-colors min-h-[36px]"
+                title="Export filtered pipeline leads to CSV"
+              >
+                <Download className="size-3.5 text-sub" />
+                <span className="hidden sm:inline">Export CSV</span>
+              </button>
+            </PermissionGate>
             <button
               type="button"
               onClick={() => setIsAddLeadOpen(true)}
@@ -333,6 +345,16 @@ export default function App() {
           <span className="text-[10px] uppercase font-bold mt-1">Analytics</span>
         </button>
       </nav>
+
+      <AuthModal isOpen={isAuthModalOpen} onClose={closeAuthModal} />
     </main>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }
