@@ -17,6 +17,7 @@ import { inventoryService } from '../services/inventoryService';
 import type { VehicleStock } from '../types/inventory';
 import { MultiBankMatrixModal } from './MultiBankMatrixModal';
 import { multiBankService } from '../services/multiBankService';
+import { VehicleSalesOrderModal } from './VehicleSalesOrderModal';
 import { PermissionGate } from './auth/PermissionGate';
 import {
   X,
@@ -28,6 +29,7 @@ import {
   UserCheck,
   Calculator,
   FileText,
+  FileCheck,
   Compass,
   MessageSquare,
   Repeat,
@@ -63,6 +65,7 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
   const [showTradeInModal, setShowTradeInModal] = useState(false);
   const [showAllocateModal, setShowAllocateModal] = useState(false);
   const [showMultiBankModal, setShowMultiBankModal] = useState(false);
+  const [showVsoModal, setShowVsoModal] = useState(false);
   const [newNote, setNewNote] = useState('');
   const [isAddingNote, setIsAddingNote] = useState(false);
 
@@ -627,7 +630,15 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
           {/* Showroom Deal Tools */}
           <div className="space-y-2">
             <span className="text-[10.5px] uppercase font-bold text-sub tracking-wider">Showroom Deal Tools</span>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <button
+                type="button"
+                onClick={() => setShowVsoModal(true)}
+                className="flex flex-col items-center justify-center p-2.5 rounded-control border border-cobalt/30 bg-cobalt-tint/40 hover:bg-cobalt-tint text-ink text-center gap-1 transition-colors group"
+              >
+                <FileCheck className="size-4 text-cobalt group-hover:scale-110 transition-transform" />
+                <span className="text-[11px] font-bold text-cobalt">Official VSO</span>
+              </button>
               <button
                 type="button"
                 onClick={() => setShowFinancingModal(true)}
@@ -720,6 +731,18 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
         isOpen={showQuotationModal}
         lead={lead}
         onClose={() => setShowQuotationModal(false)}
+      />
+
+      <VehicleSalesOrderModal
+        isOpen={showVsoModal}
+        lead={lead}
+        currentProfile={currentProfile}
+        onClose={() => setShowVsoModal(false)}
+        initialMode="vso"
+        onOrderGenerated={async () => {
+          const refreshed = await leadService.getActivities(lead.id);
+          setActivities(refreshed);
+        }}
       />
 
       <TestDriveModal

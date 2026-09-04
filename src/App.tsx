@@ -22,6 +22,7 @@ import { FloorBoardView } from './components/FloorBoardView';
 import { InventoryMatrixView } from './components/InventoryMatrixView';
 import { FiBoardView } from './components/FiBoardView';
 import { MultiBankMatrixModal } from './components/MultiBankMatrixModal';
+import { ServiceDriveView } from './components/ServiceDriveView';
 import {
   Plus,
   Kanban,
@@ -32,10 +33,11 @@ import {
   Users,
   Boxes,
   Building2,
+  Wrench,
   LogOut,
 } from 'lucide-react';
 
-type ViewMode = 'pipeline' | 'board' | 'follow_ups' | 'floor' | 'inventory' | 'fi_desk' | 'analytics';
+type ViewMode = 'pipeline' | 'board' | 'follow_ups' | 'floor' | 'inventory' | 'fi_desk' | 'service_drive' | 'analytics';
 
 function AppContent() {
   const {
@@ -258,6 +260,15 @@ function AppContent() {
           </button>
           <button
             type="button"
+            onClick={() => setCurrentView('service_drive')}
+            className={`px-3 py-1.5 rounded-control text-xs font-bold transition-colors flex items-center gap-1.5 ${
+              currentView === 'service_drive' ? 'bg-cobalt text-white shadow-sm' : 'bg-wash text-ink hover:bg-line'
+            }`}
+          >
+            <Wrench className="size-3.5" /> Service Drive
+          </button>
+          <button
+            type="button"
             onClick={() => setCurrentView('analytics')}
             className={`px-3 py-1.5 rounded-control text-xs font-bold transition-colors flex items-center gap-1.5 ${
               currentView === 'analytics' ? 'bg-cobalt text-white shadow-sm' : 'bg-wash text-ink hover:bg-line'
@@ -350,6 +361,21 @@ function AppContent() {
             leads={scopedLeads}
             onOpenLead={(l) => setSelectedLead(l)}
             onOpenMatrix={(l) => setMatrixLead(l)}
+          />
+        )}
+
+        {currentView === 'service_drive' && (
+          <ServiceDriveView
+            currentProfile={currentProfile}
+            onOpenLead={(leadId) => {
+              const target = allLeads.find((l) => l.id === leadId);
+              if (target) setSelectedLead(target);
+            }}
+            onLeadConverted={(newLead) => {
+              setAllLeads((prev) => [newLead, ...prev]);
+              setSelectedLead(newLead);
+              loadFollowUps();
+            }}
           />
         )}
 
@@ -446,7 +472,7 @@ function AppContent() {
         <button
           type="button"
           onClick={() => setCurrentView('fi_desk')}
-          className={`flex-1 flex flex-col items-center justify-center py-1 transition-colors ${
+          className={`flex-1 flex flex-col items-center justify-center py-1 transition-colors min-w-[54px] ${
             currentView === 'fi_desk' ? 'text-cobalt font-bold' : 'text-sub hover:text-ink'
           }`}
         >
@@ -455,8 +481,18 @@ function AppContent() {
         </button>
         <button
           type="button"
+          onClick={() => setCurrentView('service_drive')}
+          className={`flex-1 flex flex-col items-center justify-center py-1 transition-colors min-w-[54px] ${
+            currentView === 'service_drive' ? 'text-cobalt font-bold' : 'text-sub hover:text-ink'
+          }`}
+        >
+          <Wrench className="size-5" />
+          <span className="text-[10px] uppercase font-bold mt-1">Service</span>
+        </button>
+        <button
+          type="button"
           onClick={() => setCurrentView('analytics')}
-          className={`flex-1 flex flex-col items-center justify-center py-1 transition-colors ${
+          className={`flex-1 flex flex-col items-center justify-center py-1 transition-colors min-w-[54px] ${
             currentView === 'analytics' ? 'text-cobalt font-bold' : 'text-sub hover:text-ink'
           }`}
         >

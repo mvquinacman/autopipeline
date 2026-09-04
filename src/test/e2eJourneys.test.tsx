@@ -673,4 +673,109 @@ describe('AutoPipeline - End-to-End User Journey Verification', () => {
 
     expect(screen.queryByRole('heading', { name: /Multi-Bank Financing Approval Matrix/i })).not.toBeInTheDocument();
   });
+
+  it('Journey 20: Service Drive Upsell & Workshop Buyback Prospecting Desk identifies equity and converts to pipeline lead', async () => {
+    render(<App />);
+
+    // 1. Navigate to Service Drive tab in main navigation
+    const mainNav = screen.getByRole('navigation', { name: /Main Navigation/i });
+    const serviceTab = within(mainNav).getByRole('button', { name: /Service Drive/i });
+    fireEvent.click(serviceTab);
+
+    // 2. Verify Service Drive header & spec-sheet KPI strip
+    expect(await screen.findByText(/Workshop Lift Board & Buyback Prospecting/i)).toBeInTheDocument();
+    expect(screen.getByText(/Active in Bays/i)).toBeInTheDocument();
+    expect(screen.getByText(/High Equity Targets/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Expiring Warranty/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText(/Potential Trade-In Value/i)).toBeInTheDocument();
+    expect(screen.getByText(/Converted to Leads/i)).toBeInTheDocument();
+
+    // 3. Verify Workshop Bay Cards render (e.g. Bay 01 - Danilo Ramos Hilux Conquest)
+    expect(screen.getByText('BAY 01')).toBeInTheDocument();
+    expect(screen.getByText('Danilo Ramos')).toBeInTheDocument();
+    expect(screen.getByText(/Hilux Conquest 4x4/i)).toBeInTheDocument();
+
+    // 4. Open Buyback Pitch Modal for Bay 01
+    const reviewPitchBtns = screen.getAllByRole('button', { name: /Review Buyback Pitch/i });
+    fireEvent.click(reviewPitchBtns[0]);
+
+    // 5. Verify Equity Pitch Modal and Decision Matrix
+    expect(await screen.findByText(/Service Drive Equity & Buyback Pitch/i)).toBeInTheDocument();
+    expect(screen.getByText(/Option A: Keep Current Vehicle/i)).toBeInTheDocument();
+    expect(screen.getByText(/Option B: Trade-Up to 2026 Model/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Toyota Hilux GR-S 4x4/i).length).toBeGreaterThanOrEqual(1);
+
+    // 6. Convert appointment to pipeline lead
+    const convertBtn = screen.getByRole('button', { name: /Convert to Pipeline Lead/i });
+    fireEvent.click(convertBtn);
+
+    // 7. Verify modal closes and lead appears in pipeline
+    await waitFor(() => {
+      expect(screen.queryByText(/Service Drive Equity & Buyback Pitch/i)).not.toBeInTheDocument();
+    });
+  });
+
+  it('Journey 21: Official Vehicle Sales Order (VSO) & Quotation Generator creates legal contract with 4-tier signature blocks', async () => {
+    // Mock window.print
+    const printSpy = vi.spyOn(window, 'print').mockImplementation(() => {});
+
+    render(<App />);
+
+    // 1. Ensure we are in Pipeline view and click on a lead card to open Lead Drawer
+    const mainNav = screen.getByRole('navigation', { name: /Main Navigation/i });
+    const pipelineTab = within(mainNav).getByRole('button', { name: /Pipeline/i });
+    fireEvent.click(pipelineTab);
+
+    const leadCard = (await screen.findAllByText('Maria Santos'))[0];
+    fireEvent.click(leadCard);
+
+    // 2. LeadDetailDrawer opens; find Showroom Deal Tools with "Official VSO"
+    expect(await screen.findByRole('heading', { name: /Maria Santos/i })).toBeInTheDocument();
+    const vsoToolBtn = screen.getByRole('button', { name: /Official VSO/i });
+    expect(vsoToolBtn).toBeInTheDocument();
+
+    // 3. Click "Official VSO" to launch the Vehicle Sales Order Generator
+    fireEvent.click(vsoToolBtn);
+
+    // 4. Verify Dealership Legal Letterhead & Accreditation
+    expect(await screen.findByText(/METRO MANILA MOTORS CORP./i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Authorized Toyota Dealership — Bonifacio Global City Showroom/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/004-912-883-000 VAT Reg/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/NCR-2024-0812/i).length).toBeGreaterThanOrEqual(1);
+
+    // 5. Verify Sections: Buyer, Vehicle, Financials, 4-Tier Signatures
+    expect(screen.getByText(/Section 1: Buyer Particulars/i)).toBeInTheDocument();
+    expect(screen.getByText(/Section 2: Vehicle Technical Particulars/i)).toBeInTheDocument();
+    expect(screen.getByText(/Section 3: Financial Settlement & Payment Breakdown/i)).toBeInTheDocument();
+    expect(screen.getByText(/Section 4: Conforme, Review & Executive Approval Hierarchy/i)).toBeInTheDocument();
+
+    // Verify 4-tier sign-off blocks
+    expect(screen.getByText('Buyer / Conforme')).toBeInTheDocument();
+    expect(screen.getByText('Marketing Professional')).toBeInTheDocument();
+    expect(screen.getByText('General Sales Manager')).toBeInTheDocument();
+    expect(screen.getByText('Dealer Principal / VP')).toBeInTheDocument();
+    expect(screen.getAllByText(/Don Antonio Zobel/i).length).toBeGreaterThanOrEqual(1);
+
+    // 6. Test Customize Toggle (open accessories & discount controls)
+    const customizeBtn = screen.getByRole('button', { name: /Customize/i });
+    fireEvent.click(customizeBtn);
+    expect(screen.getByText(/Agreement Particulars & Discount Controls/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Platinum Nano-Ceramic Tint/i).length).toBeGreaterThanOrEqual(1);
+
+    // 7. Click Print / Save PDF
+    const printBtn = screen.getByRole('button', { name: /Print \/ Save PDF/i });
+    fireEvent.click(printBtn);
+
+    await waitFor(() => {
+      expect(printSpy).toHaveBeenCalled();
+    });
+
+    // 8. Close VSO Modal
+    const closeBtn = screen.getByRole('button', { name: /Close dialog/i });
+    fireEvent.click(closeBtn);
+
+    expect(screen.queryByText(/Section 4: Conforme, Review & Executive Approval Hierarchy/i)).not.toBeInTheDocument();
+
+    printSpy.mockRestore();
+  });
 });
