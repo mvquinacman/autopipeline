@@ -1,6 +1,6 @@
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
-import { SEED_LEADS, SEED_ACTIVITIES, SEED_PROFILES, STAGES } from '../data/seed';
-import { Lead, Stage, Activity, Profile } from '../types/crm';
+import { SEED_LEADS, SEED_ACTIVITIES, SEED_PROFILES, SEED_FOLLOW_UPS, STAGES } from '../data/seed';
+import { Lead, Stage, Activity, Profile, FollowUp, FollowUpWithLead } from '../types/crm';
 import {
   CreateLeadInput,
   CreateLeadSchema,
@@ -12,6 +12,7 @@ import {
 // In-memory stores for mock fallback
 let inMemoryLeads: Lead[] = [...SEED_LEADS];
 let inMemoryActivities: Activity[] = [...SEED_ACTIVITIES];
+let inMemoryFollowUps: FollowUp[] = [...SEED_FOLLOW_UPS];
 
 export interface DuplicateCheckResult {
   isDuplicate: boolean;
@@ -396,10 +397,201 @@ export const leadService = {
   },
 
   /**
+   * Fetches all follow-ups
+   */
+  async getFollowUps(): Promise<FollowUp[]> {
+    if (isSupabaseConfigured && supabase) {
+      const { data, error } = await supabase
+        .from('follow_ups')
+        .select('*')
+        .order('due_date', { ascending: true });
+
+      if (error) {
+        console.error('Failed to fetch follow-ups:', error);
+        throw error;
+      }
+      return data as FollowUp[];
+    }
+    return [...inMemoryFollowUps];
+  },
+
+  /**
+   * Fetches enriched follow-ups joined with lead info and escalation status
+   */
+  async getEnrichedFollowUps(roleProfile?: Profile): Promise<FollowUpWithLead[]> {
+    const rawFollowUps = await this.getFollowUps();
+    const leads = await this.getLeads();
+    const leadMap = new Map<string, Lead>(leads.map((l) => [l.id, l]));
+
+    const now = new Date('2026-09-04T12:00:00Z').getTime(); // Dealership clock reference
+
+    const enriched: FollowUpWithLead[] = rawFollowUps.map((fu) => {
+      const lead = leadMap.get(fu.leadId);
+      const dueTime = new Date(fu.dueDate).getTime();
+      const isPast24h = dueTime < now - 24 * 3600 * 1000;
+      const isEscalated = fu.status === 'missed' || (fu.status === 'pending' && isPast24h);
+
+      return {
+        ...fu,
+        customerName: lead ? lead.customerName : 'Unknown Customer',
+        customerPhone: lead ? lead.customerPhone : '',
+        modelInterest: lead ? lead.modelInterest : 'Inquiry',
+        leadStage: lead ? lead.stage : 'new',
+        agentName: lead ? lead.agentName : 'Unassigned',
+        isEscalated,
+      };
+    });
+
+    if (!roleProfile) return enriched;
+
+    if (roleProfile.role === 'agent') {
+      return enriched.filter((fu) => fu.agentId === roleProfile.id);
+    }
+    if (roleProfile.role === 'manager') {
+      return enriched.filter((fu) => {
+        const lead = leadMap.get(fu.leadId);
+        return lead && (!lead.teamId || lead.teamId === roleProfile.teamId);
+      });
+    }
+
+    return enriched;
+  },
+
+  /**
+   * Completes a follow-up and appends activity audit log
+   */
+  async completeFollowUp(
+    followUpId: string,
+    actorId: string,
+    actorName: string,
+    note?: string
+  ): Promise<FollowUp> {
+    const index = inMemoryFollowUps.findIndex((f) => f.id === followUpId);
+    if (index === -1) {
+      throw new Error(`Follow-up ${followUpId} not found`);
+    }
+
+    const current = inMemoryFollowUps[index];
+    const updated: FollowUp = {
+      ...current,
+      status: 'done',
+    };
+    inMemoryFollowUps[index] = updated;
+
+    await this.addActivity(
+      current.leadId,
+      actorId,
+      actorName,
+      'call',
+      `Completed follow-up: ${note || current.note}`
+    );
+
+    // Update lead urgency to none if no other pending followups
+    const leadIndex = inMemoryLeads.findIndex((l) => l.id === current.leadId);
+    if (leadIndex !== -1) {
+      inMemoryLeads[leadIndex] = {
+        ...inMemoryLeads[leadIndex],
+        urgency: 'none',
+        updatedAt: new Date().toISOString(),
+      };
+    }
+
+    return updated;
+  },
+
+  /**
+   * Reschedules a follow-up to a new date and appends activity
+   */
+  async rescheduleFollowUp(
+    followUpId: string,
+    newDueDate: string,
+    actorId: string,
+    actorName: string,
+    reason?: string
+  ): Promise<FollowUp> {
+    const index = inMemoryFollowUps.findIndex((f) => f.id === followUpId);
+    if (index === -1) {
+      throw new Error(`Follow-up ${followUpId} not found`);
+    }
+
+    const current = inMemoryFollowUps[index];
+    const updated: FollowUp = {
+      ...current,
+      dueDate: newDueDate,
+      status: 'pending',
+    };
+    inMemoryFollowUps[index] = updated;
+
+    await this.addActivity(
+      current.leadId,
+      actorId,
+      actorName,
+      'note',
+      `Rescheduled follow-up to ${new Date(newDueDate).toLocaleDateString()}${reason ? ` (${reason})` : ''}`
+    );
+
+    // Update lead follow-up date and urgency
+    const leadIndex = inMemoryLeads.findIndex((l) => l.id === current.leadId);
+    if (leadIndex !== -1) {
+      inMemoryLeads[leadIndex] = {
+        ...inMemoryLeads[leadIndex],
+        followUpDue: newDueDate,
+        urgency: 'upcoming',
+        updatedAt: new Date().toISOString(),
+      };
+    }
+
+    return updated;
+  },
+
+  /**
+   * Creates a new follow-up for a lead
+   */
+  async createFollowUp(
+    leadId: string,
+    dueDate: string,
+    note: string,
+    agentId: string,
+    actorName: string
+  ): Promise<FollowUp> {
+    const newFollowUp: FollowUp = {
+      id: crypto.randomUUID(),
+      leadId,
+      agentId,
+      dueDate,
+      status: 'pending',
+      note,
+    };
+
+    inMemoryFollowUps = [newFollowUp, ...inMemoryFollowUps];
+
+    await this.addActivity(
+      leadId,
+      agentId,
+      actorName,
+      'note',
+      `Scheduled follow-up for ${new Date(dueDate).toLocaleDateString()}: ${note}`
+    );
+
+    const leadIndex = inMemoryLeads.findIndex((l) => l.id === leadId);
+    if (leadIndex !== -1) {
+      inMemoryLeads[leadIndex] = {
+        ...inMemoryLeads[leadIndex],
+        followUpDue: dueDate,
+        urgency: 'upcoming',
+        updatedAt: new Date().toISOString(),
+      };
+    }
+
+    return newFollowUp;
+  },
+
+  /**
    * Resets in-memory mock store (for testing)
    */
   resetMockStore(): void {
     inMemoryLeads = [...SEED_LEADS];
     inMemoryActivities = [...SEED_ACTIVITIES];
+    inMemoryFollowUps = [...SEED_FOLLOW_UPS];
   },
 };

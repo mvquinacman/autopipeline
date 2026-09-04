@@ -73,6 +73,15 @@ export interface FollowUp {
   note: string;
 }
 
+export interface FollowUpWithLead extends FollowUp {
+  customerName: string;
+  customerPhone: string;
+  modelInterest: string;
+  leadStage: Stage;
+  agentName: string;
+  isEscalated?: boolean;
+}
+
 export interface KpiSummary {
   totalActiveLeads: number;
   closedThisMonthValue: number;
