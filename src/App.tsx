@@ -26,6 +26,8 @@ import { ServiceDriveView } from './components/ServiceDriveView';
 import { DeliveryBayView } from './components/DeliveryBayView';
 import { CommissionsView } from './components/CommissionsView';
 import { SocialIntakeView } from './components/SocialIntakeView';
+import { Sidebar } from './components/navigation/Sidebar';
+import type { ViewMode } from './components/navigation/navItems';
 import {
   Plus,
   Kanban,
@@ -43,8 +45,6 @@ import {
   LogOut,
 } from 'lucide-react';
 
-type ViewMode = 'pipeline' | 'board' | 'follow_ups' | 'floor' | 'inventory' | 'fi_desk' | 'service_drive' | 'delivery' | 'commissions' | 'social_intake' | 'analytics';
-
 function AppContent() {
   const {
     session,
@@ -58,6 +58,7 @@ function AppContent() {
     closeAuthModal,
   } = useAuth();
   const [currentView, setCurrentView] = useState<ViewMode>('pipeline');
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [allLeads, setAllLeads] = useState<Lead[]>(SEED_LEADS);
   const [followUps, setFollowUps] = useState<FollowUpWithLead[]>([]);
   const [selectedStage, setSelectedStage] = useState<Stage | null>(null);
@@ -142,16 +143,34 @@ function AppContent() {
   }
 
   return (
-    <main className="min-h-screen bg-paper text-ink p-4 sm:p-6 pb-24 md:pb-6 font-sans">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-paper text-ink font-sans flex flex-col md:flex-row">
+      {/* Collapsible Left Sidebar (Desktop/Tablet) */}
+      <Sidebar
+        currentView={currentView}
+        onSelectView={setCurrentView}
+        overdueCount={kpis.overdueFollowUpsCount}
+        isCollapsed={isSidebarCollapsed}
+        onToggleCollapse={() => setIsSidebarCollapsed((prev) => !prev)}
+      />
+
+      {/* Main Workspace Area */}
+      <div className="flex-1 flex flex-col min-w-0">
         {/* Dealership Header */}
-        <header className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-6 border-b border-line pb-4">
+        <header className="sticky top-0 z-20 bg-paper/95 backdrop-blur-sm border-b border-line px-4 sm:px-6 py-3.5 flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-6">
           <div className="flex items-center gap-3 shrink-0">
-            <div className="size-10 rounded-control bg-cobalt text-white flex items-center justify-center font-display font-bold text-xl tracking-wider shrink-0 shadow-sm">
+            <div className="md:hidden size-9 rounded-control bg-cobalt text-white flex items-center justify-center font-display font-bold text-lg tracking-wider shrink-0 shadow-sm">
               AP
             </div>
             <div>
-              <h1 className="font-display text-2xl font-bold tracking-tight text-ink leading-tight">AutoPipeline</h1>
+              <div className="flex items-center gap-2">
+                <h1 className="font-display text-2xl font-bold tracking-tight text-ink leading-tight">
+                  AutoPipeline
+                </h1>
+                <span className="text-sub/40 hidden sm:inline">•</span>
+                <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-wash text-sub border border-line capitalize">
+                  {currentView.replace('_', ' ')}
+                </span>
+              </div>
               <p className="text-xs text-sub font-medium">Metro Manila Motors — BGC Showroom</p>
             </div>
           </div>
@@ -203,113 +222,8 @@ function AppContent() {
           </div>
         </header>
 
-        {/* View Switcher Tabs (Desktop & Tablet) */}
-        <nav aria-label="Main Navigation" className="hidden md:flex items-center gap-1.5 border-b border-line pb-2">
-          <button
-            type="button"
-            onClick={() => setCurrentView('pipeline')}
-            className={`px-3 py-1.5 rounded-control text-xs font-bold transition-colors flex items-center gap-1.5 ${
-              currentView === 'pipeline' ? 'bg-cobalt text-white shadow-sm' : 'bg-wash text-ink hover:bg-line'
-            }`}
-          >
-            <Kanban className="size-3.5" /> Pipeline
-          </button>
-          <button
-            type="button"
-            onClick={() => setCurrentView('board')}
-            className={`px-3 py-1.5 rounded-control text-xs font-bold transition-colors flex items-center gap-1.5 ${
-              currentView === 'board' ? 'bg-cobalt text-white shadow-sm' : 'bg-wash text-ink hover:bg-line'
-            }`}
-          >
-            <LayoutGrid className="size-3.5" /> Kanban Board
-          </button>
-          <button
-            type="button"
-            onClick={() => setCurrentView('follow_ups')}
-            className={`px-3 py-1.5 rounded-control text-xs font-bold transition-colors flex items-center gap-1.5 ${
-              currentView === 'follow_ups' ? 'bg-cobalt text-white shadow-sm' : 'bg-wash text-ink hover:bg-line'
-            }`}
-          >
-            <CalendarCheck className="size-3.5" /> Follow-ups
-            {kpis.overdueFollowUpsCount > 0 && (
-              <span className="px-1.5 py-0.2 rounded-full bg-overdue text-white text-[10px] font-bold">
-                {kpis.overdueFollowUpsCount}
-              </span>
-            )}
-          </button>
-          <button
-            type="button"
-            onClick={() => setCurrentView('floor')}
-            className={`px-3 py-1.5 rounded-control text-xs font-bold transition-colors flex items-center gap-1.5 ${
-              currentView === 'floor' ? 'bg-cobalt text-white shadow-sm' : 'bg-wash text-ink hover:bg-line'
-            }`}
-          >
-            <Users className="size-3.5" /> Floor Board
-          </button>
-          <button
-            type="button"
-            onClick={() => setCurrentView('inventory')}
-            className={`px-3 py-1.5 rounded-control text-xs font-bold transition-colors flex items-center gap-1.5 ${
-              currentView === 'inventory' ? 'bg-cobalt text-white shadow-sm' : 'bg-wash text-ink hover:bg-line'
-            }`}
-          >
-            <Boxes className="size-3.5" /> Stock Matrix
-          </button>
-          <button
-            type="button"
-            onClick={() => setCurrentView('fi_desk')}
-            className={`px-3 py-1.5 rounded-control text-xs font-bold transition-colors flex items-center gap-1.5 ${
-              currentView === 'fi_desk' ? 'bg-cobalt text-white shadow-sm' : 'bg-wash text-ink hover:bg-line'
-            }`}
-          >
-            <Building2 className="size-3.5" /> F&amp;I Desk
-          </button>
-          <button
-            type="button"
-            onClick={() => setCurrentView('service_drive')}
-            className={`px-3 py-1.5 rounded-control text-xs font-bold transition-colors flex items-center gap-1.5 ${
-              currentView === 'service_drive' ? 'bg-cobalt text-white shadow-sm' : 'bg-wash text-ink hover:bg-line'
-            }`}
-          >
-            <Wrench className="size-3.5" /> Service Drive
-          </button>
-          <button
-            type="button"
-            onClick={() => setCurrentView('delivery')}
-            className={`px-3 py-1.5 rounded-control text-xs font-bold transition-colors flex items-center gap-1.5 ${
-              currentView === 'delivery' ? 'bg-cobalt text-white shadow-sm' : 'bg-wash text-ink hover:bg-line'
-            }`}
-          >
-            <Truck className="size-3.5" /> Delivery Bay
-          </button>
-          <button
-            type="button"
-            onClick={() => setCurrentView('commissions')}
-            className={`px-3 py-1.5 rounded-control text-xs font-bold transition-colors flex items-center gap-1.5 ${
-              currentView === 'commissions' ? 'bg-cobalt text-white shadow-sm' : 'bg-wash text-ink hover:bg-line'
-            }`}
-          >
-            <Wallet className="size-3.5" /> Commissions
-          </button>
-          <button
-            type="button"
-            onClick={() => setCurrentView('social_intake')}
-            className={`px-3 py-1.5 rounded-control text-xs font-bold transition-colors flex items-center gap-1.5 ${
-              currentView === 'social_intake' ? 'bg-cobalt text-white shadow-sm' : 'bg-wash text-ink hover:bg-line'
-            }`}
-          >
-            <Globe className="size-3.5" /> Social Hub
-          </button>
-          <button
-            type="button"
-            onClick={() => setCurrentView('analytics')}
-            className={`px-3 py-1.5 rounded-control text-xs font-bold transition-colors flex items-center gap-1.5 ${
-              currentView === 'analytics' ? 'bg-cobalt text-white shadow-sm' : 'bg-wash text-ink hover:bg-line'
-            }`}
-          >
-            <BarChart3 className="size-3.5" /> Analytics
-          </button>
-        </nav>
+        {/* Scrollable Main Workspace */}
+        <main className="flex-1 p-4 sm:p-6 pb-24 md:pb-8 max-w-7xl w-full mx-auto space-y-6">
 
         {/* KPI Strip */}
         <KpiStrip kpis={kpis} />
@@ -444,7 +358,8 @@ function AppContent() {
         {currentView === 'analytics' && (
           <FunnelAnalytics leads={scopedLeads} />
         )}
-      </div>
+      </main>
+    </div>
 
       <LeadDetailDrawer
         lead={selectedLead}
@@ -605,7 +520,7 @@ function AppContent() {
           }}
         />
       )}
-    </main>
+    </div>
   );
 }
 
