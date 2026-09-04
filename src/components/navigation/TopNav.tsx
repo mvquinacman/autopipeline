@@ -17,7 +17,6 @@ const DEAL_DESKS = [
   { id: 'delivery' as ViewMode, label: 'Delivery Bay', icon: Truck },
   { id: 'social_intake' as ViewMode, label: 'Social Hub', icon: Globe },
 ];
-
 export const TopNav: React.FC<TopNavProps> = ({ currentView, onSelectView, overdueCount = 0 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -26,6 +25,7 @@ export const TopNav: React.FC<TopNavProps> = ({ currentView, onSelectView, overd
 
   const isDeskActive = DEAL_DESKS.some((d) => d.id === currentView);
   const activeDesk = DEAL_DESKS.find((d) => d.id === currentView);
+  const ActiveIcon = isDeskActive && activeDesk ? activeDesk.icon : Layers;
   const isVisible = isOpen || isHovered;
 
   const handleMouseEnter = () => { if (timeoutRef.current) clearTimeout(timeoutRef.current); setIsHovered(true); };
@@ -79,15 +79,16 @@ export const TopNav: React.FC<TopNavProps> = ({ currentView, onSelectView, overd
           onClick={() => setIsOpen((p) => !p)}
           aria-haspopup="menu"
           aria-expanded={isVisible}
-          title={isDeskActive && activeDesk ? `Deal Desks: ${activeDesk.label}` : 'Deal Desks'}
-          className={btnStyle(isDeskActive)}
+          aria-label={isDeskActive && activeDesk ? `Deal Desks (${activeDesk.label})` : 'Deal Desks'}
+          className={`w-[138px] px-2.5 py-1.5 rounded-control text-xs font-bold transition-colors flex items-center justify-between ${isDeskActive ? 'bg-cobalt text-white shadow-sm' : 'bg-wash text-ink hover:bg-line'}`}
         >
-          <Layers className="size-3.5" /> <span>Deal Desks</span>
-          <ChevronDown className={`size-3 transition-transform duration-150 ${isVisible ? 'rotate-180' : ''}`} />
+          <div className="flex items-center gap-1.5 min-w-0">
+            <ActiveIcon className="size-3.5 shrink-0" />
+            <span className="truncate">{isDeskActive && activeDesk ? activeDesk.label : 'Deal Desks'}</span>
+          </div>
+          <ChevronDown className={`size-3 shrink-0 transition-transform duration-150 ${isVisible ? 'rotate-180' : ''}`} />
         </button>
-        <div className={`absolute left-0 top-full pt-1 z-30 transition-all duration-150 ${
-          isVisible ? 'opacity-100 scale-100 pointer-events-auto' : 'opacity-0 scale-95 pointer-events-none'
-        }`}>
+        <div className={`absolute left-0 top-full pt-1 z-30 transition-all duration-150 ${isVisible ? 'opacity-100 scale-100 pointer-events-auto' : 'opacity-0 scale-95 pointer-events-none'}`}>
           <div className="w-48 bg-card border border-line rounded-card shadow-lg p-1.5 space-y-0.5">
             {DEAL_DESKS.map(({ id, label, icon: Icon }) => (
               <button
@@ -109,7 +110,6 @@ export const TopNav: React.FC<TopNavProps> = ({ currentView, onSelectView, overd
       <button type="button" onClick={() => onSelectView('commissions')} className={btnStyle(currentView === 'commissions')}>
         <Wallet className="size-3.5" /> Commissions
       </button>
-
       <button type="button" onClick={() => onSelectView('analytics')} className={btnStyle(currentView === 'analytics')}>
         <BarChart3 className="size-3.5" /> Analytics
       </button>
