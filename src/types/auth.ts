@@ -1,4 +1,4 @@
-﻿import type { Role, Profile } from './crm';
+import type { Role, Profile } from './crm';
 
 export type DealershipPermission =
   | 'lead:view'
@@ -9,7 +9,10 @@ export type DealershipPermission =
   | 'trade_in:appraise'
   | 'analytics:team'
   | 'analytics:dealership'
-  | 'quota:manage';
+  | 'quota:manage'
+  | 'commission:view_team'
+  | 'commission:approve'
+  | 'social:manage';
 
 export const ROLE_HIERARCHY_RANK: Record<Role, number> = {
   agent: 1,
@@ -23,6 +26,7 @@ export const ROLE_PERMISSIONS: Record<Role, DealershipPermission[]> = {
     'lead:advance',
     'lead:mark_lost',
     'trade_in:appraise',
+    'social:manage',
   ],
   manager: [
     'lead:view',
@@ -32,6 +36,9 @@ export const ROLE_PERMISSIONS: Record<Role, DealershipPermission[]> = {
     'lead:reassign',
     'lead:export',
     'analytics:team',
+    'commission:view_team',
+    'commission:approve',
+    'social:manage',
   ],
   dealer_principal: [
     'lead:view',
@@ -43,6 +50,9 @@ export const ROLE_PERMISSIONS: Record<Role, DealershipPermission[]> = {
     'analytics:team',
     'analytics:dealership',
     'quota:manage',
+    'commission:view_team',
+    'commission:approve',
+    'social:manage',
   ],
 };
 

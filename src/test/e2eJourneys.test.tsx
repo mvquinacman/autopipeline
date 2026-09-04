@@ -6,6 +6,8 @@ import { tradeInService } from '../services/tradeInService';
 import { authService } from '../services/authService';
 import { upSystemService } from '../services/upSystemService';
 import { inventoryService } from '../services/inventoryService';
+import { commissionService } from '../services/commissionService';
+import { socialIntakeService } from '../services/socialIntakeService';
 
 describe('AutoPipeline - End-to-End User Journey Verification', () => {
   beforeEach(() => {
@@ -14,6 +16,8 @@ describe('AutoPipeline - End-to-End User Journey Verification', () => {
     tradeInService.resetMockStore();
     upSystemService.resetMockStore();
     inventoryService.resetMockStore();
+    commissionService.resetStore();
+    socialIntakeService.resetStore();
     const defaultProfile = authService.getProfiles()[0];
     authService.saveSession(authService.createSession(defaultProfile));
   });
@@ -853,5 +857,102 @@ describe('AutoPipeline - End-to-End User Journey Verification', () => {
     expect(screen.queryByRole('heading', { name: /Vehicle Turnover & Handover Ceremony/i })).not.toBeInTheDocument();
 
     printSpy.mockRestore();
+  });
+
+  it('Journey 23: Sales Commission & Dealer Incentive Compensation Desk tracks agent wallet, reserve split, and GSM approvals', async () => {
+    render(<App />);
+    const mainNav = screen.getByRole('navigation', { name: /Main Navigation/i });
+
+    // 1. Switch to Commissions tab
+    const commTab = within(mainNav).getByRole('button', { name: /Commissions/i });
+    fireEvent.click(commTab);
+
+    // 2. Verify Agent Wallet renders for default agent Paolo Morales
+    expect(await screen.findByText('My Earnings Wallet')).toBeInTheDocument();
+    expect(screen.getByText(/Paolo Morales • Sales Consultant Payouts/i)).toBeInTheDocument();
+    expect(screen.getByText(/Base Unit Cut/i)).toBeInTheDocument();
+    expect(screen.getByText(/F&I Bank Share \(20%\)/i)).toBeInTheDocument();
+
+    // 3. Open Deal Commission Voucher for Maria Santos
+    const dealRow = screen.getByRole('button', { name: /Maria Santos/i });
+    fireEvent.click(dealRow);
+
+    expect(await screen.findByRole('heading', { name: /Commission Voucher & Payout Slip/i })).toBeInTheDocument();
+    expect(screen.getByText(/Base Unit Sales Commission:/i)).toBeInTheDocument();
+    expect(screen.getByText(/F&I Bank Reserve Share \(20%\):/i)).toBeInTheDocument();
+    expect(screen.getByText(/Total Sales Consultant Payout:/i)).toBeInTheDocument();
+
+    // Close voucher modal
+    const closeVoucherBtn = screen.getByRole('button', { name: /^Close$/i });
+    fireEvent.click(closeVoucherBtn);
+    expect(screen.queryByRole('heading', { name: /Commission Voucher & Payout Slip/i })).not.toBeInTheDocument();
+
+    // 4. Switch to Manager role via Showroom Terminal Auth Modal
+    const switchTerminalBtn = screen.getByRole('button', { name: /Open terminal authentication/i });
+    fireEvent.click(switchTerminalBtn);
+
+    const authModal = (await screen.findByRole('heading', { name: /Showroom Terminal Auth/i })).closest('div.bg-card') as HTMLElement;
+    const rafaelCard = within(authModal).getByText('Rafael Alcantara');
+    fireEvent.click(rafaelCard);
+    const instantSwitchBtn = within(authModal).getByRole('button', { name: /Instant Switch \(Demo\)/i });
+    fireEvent.click(instantSwitchBtn);
+
+    // 5. In Commissions view as Manager, verify GSM clearance ledger renders
+    expect(await screen.findByText('Dealership Commission & Incentive Ledger')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Export Payroll CSV/i })).toBeInTheDocument();
+
+    // Approve a pending payout
+    const approveBtn = screen.getAllByRole('button', { name: /^Approve$/i })[0];
+    fireEvent.click(approveBtn);
+
+    await waitFor(() => {
+      expect(screen.getAllByText('Cleared').length).toBeGreaterThanOrEqual(2);
+    });
+  });
+
+  it('Journey 24: Omnichannel Social Intake Hub captures Meta Lead Ads, enforces 15-minute SLA, and auto-dispatches to floor queue', async () => {
+    render(<App />);
+    const mainNav = screen.getByRole('navigation', { name: /Main Navigation/i });
+
+    // 1. Switch to Social Hub
+    const socialTab = within(mainNav).getByRole('button', { name: /Social Hub/i });
+    fireEvent.click(socialTab);
+
+    // 2. Verify SLA KPI Spec Strip & Seed Leads render
+    expect(await screen.findByText(/Today's Inquiries/i)).toBeInTheDocument();
+    expect(screen.getByText(/15-Min SLA Compliance/i)).toBeInTheDocument();
+    expect(screen.getByText('Giancarlo Ramos')).toBeInTheDocument();
+    expect(screen.getAllByText(/Meta Lead Ad/i).length).toBeGreaterThanOrEqual(1);
+
+    // 3. Open Simulate Meta Lead Ad modal
+    const simBtn = screen.getByRole('button', { name: /Simulate Meta Lead Ad/i });
+    fireEvent.click(simBtn);
+
+    expect(await screen.findByRole('heading', { name: /Simulate Live Lead Intake/i })).toBeInTheDocument();
+
+    // 4. Inject webhook lead
+    const injectBtn = screen.getByRole('button', { name: /Inject Webhook Lead/i });
+    fireEvent.click(injectBtn);
+
+    // 5. Verify simulated lead appears in feed with active 15m SLA timer
+    expect(await screen.findByText('Miguel Hernandez')).toBeInTheDocument();
+    expect(screen.getAllByText(/SLA left/i).length).toBeGreaterThanOrEqual(1);
+
+    // 6. Perform one-click outreach (Viber)
+    const viberOutreachBtns = screen.getAllByTitle(/Send official Viber greeting/i);
+    fireEvent.click(viberOutreachBtns[0]);
+
+    // SLA is marked as Met
+    await waitFor(() => {
+      expect(screen.getAllByText(/SLA Met/i).length).toBeGreaterThanOrEqual(1);
+    });
+
+    // 7. Convert social lead into CRM pipeline lead
+    const pipelineConvertBtns = screen.getAllByTitle(/Convert to CRM lead/i);
+    fireEvent.click(pipelineConvertBtns[0]);
+
+    await waitFor(() => {
+      expect(screen.getAllByText(/Converted to CRM Lead/i).length).toBeGreaterThanOrEqual(1);
+    });
   });
 });

@@ -22,6 +22,9 @@ import { TurnoverCeremonyModal } from './delivery/TurnoverCeremonyModal';
 import { deliveryService } from '../services/deliveryService';
 import { STANDARD_PDI_ITEMS, STANDARD_HANDOVER_KIT } from '../data/seedDelivery';
 import type { DeliveryBayStatus } from '../types/delivery';
+import { CommissionSlipModal } from './commission/CommissionSlipModal';
+import { commissionService } from '../services/commissionService';
+import type { CommissionRecord } from '../types/commission';
 import { PermissionGate } from './auth/PermissionGate';
 import {
   X,
@@ -43,6 +46,7 @@ import {
   Building2,
   CheckCircle2,
   Truck,
+  Receipt,
 } from 'lucide-react';
 
 interface LeadDetailDrawerProps {
@@ -72,8 +76,23 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
   const [showMultiBankModal, setShowMultiBankModal] = useState(false);
   const [showVsoModal, setShowVsoModal] = useState(false);
   const [showDeliveryModal, setShowDeliveryModal] = useState(false);
+  const [showCommissionModal, setShowCommissionModal] = useState(false);
+  const [dealCommission, setDealCommission] = useState<CommissionRecord | null>(null);
   const [newNote, setNewNote] = useState('');
   const [isAddingNote, setIsAddingNote] = useState(false);
+
+  const handleOpenCommission = async () => {
+    if (!lead) return;
+    let comm = await commissionService.getCommissionForLead(lead.id);
+    if (!comm) {
+      comm = commissionService.createCommissionForLead(lead, {
+        vin: allocatedVehicle?.vin,
+        variant: allocatedVehicle?.variant,
+      });
+    }
+    setDealCommission(comm);
+    setShowCommissionModal(true);
+  };
 
   const tradeInRecord = useMemo(() => {
     if (!lead) return null;
@@ -737,6 +756,14 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
                 <Truck className="size-4 text-cobalt group-hover:scale-110 transition-transform" />
                 <span className="text-[11px] font-bold">Delivery Bay</span>
               </button>
+              <button
+                type="button"
+                onClick={handleOpenCommission}
+                className="flex flex-col items-center justify-center p-2.5 rounded-control border border-line bg-wash hover:bg-line/60 text-ink text-center gap-1 transition-colors group"
+              >
+                <Receipt className="size-4 text-cobalt group-hover:scale-110 transition-transform" />
+                <span className="text-[11px] font-bold">Commission</span>
+              </button>
             </div>
           </div>
 
@@ -827,6 +854,23 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
         lead={lead}
         onClose={() => setShowMultiBankModal(false)}
         onOfferAccepted={handleOfferAccepted}
+      />
+
+      <CommissionSlipModal
+        isOpen={showCommissionModal}
+        commission={dealCommission}
+        onClose={() => setShowCommissionModal(false)}
+        onApprove={async (id) => {
+          await commissionService.approveCommission(id, currentProfile.fullName);
+          if (dealCommission) {
+            setDealCommission({
+              ...dealCommission,
+              status: 'gsm_approved',
+              approvedBy: currentProfile.fullName,
+              approvedAt: new Date().toISOString(),
+            });
+          }
+        }}
       />
     </div>
   );

@@ -24,6 +24,8 @@ import { FiBoardView } from './components/FiBoardView';
 import { MultiBankMatrixModal } from './components/MultiBankMatrixModal';
 import { ServiceDriveView } from './components/ServiceDriveView';
 import { DeliveryBayView } from './components/DeliveryBayView';
+import { CommissionsView } from './components/CommissionsView';
+import { SocialIntakeView } from './components/SocialIntakeView';
 import {
   Plus,
   Kanban,
@@ -36,10 +38,12 @@ import {
   Building2,
   Wrench,
   Truck,
+  Wallet,
+  Globe,
   LogOut,
 } from 'lucide-react';
 
-type ViewMode = 'pipeline' | 'board' | 'follow_ups' | 'floor' | 'inventory' | 'fi_desk' | 'service_drive' | 'delivery' | 'analytics';
+type ViewMode = 'pipeline' | 'board' | 'follow_ups' | 'floor' | 'inventory' | 'fi_desk' | 'service_drive' | 'delivery' | 'commissions' | 'social_intake' | 'analytics';
 
 function AppContent() {
   const {
@@ -280,6 +284,24 @@ function AppContent() {
           </button>
           <button
             type="button"
+            onClick={() => setCurrentView('commissions')}
+            className={`px-3 py-1.5 rounded-control text-xs font-bold transition-colors flex items-center gap-1.5 ${
+              currentView === 'commissions' ? 'bg-cobalt text-white shadow-sm' : 'bg-wash text-ink hover:bg-line'
+            }`}
+          >
+            <Wallet className="size-3.5" /> Commissions
+          </button>
+          <button
+            type="button"
+            onClick={() => setCurrentView('social_intake')}
+            className={`px-3 py-1.5 rounded-control text-xs font-bold transition-colors flex items-center gap-1.5 ${
+              currentView === 'social_intake' ? 'bg-cobalt text-white shadow-sm' : 'bg-wash text-ink hover:bg-line'
+            }`}
+          >
+            <Globe className="size-3.5" /> Social Hub
+          </button>
+          <button
+            type="button"
             onClick={() => setCurrentView('analytics')}
             className={`px-3 py-1.5 rounded-control text-xs font-bold transition-colors flex items-center gap-1.5 ${
               currentView === 'analytics' ? 'bg-cobalt text-white shadow-sm' : 'bg-wash text-ink hover:bg-line'
@@ -404,6 +426,21 @@ function AppContent() {
           />
         )}
 
+        {currentView === 'commissions' && (
+          <CommissionsView currentProfile={currentProfile} />
+        )}
+
+        {currentView === 'social_intake' && (
+          <SocialIntakeView
+            currentProfile={currentProfile}
+            onLeadConverted={(newLead) => {
+              setAllLeads((prev) => [newLead, ...prev]);
+              setSelectedLead(newLead);
+              loadFollowUps();
+            }}
+          />
+        )}
+
         {currentView === 'analytics' && (
           <FunnelAnalytics leads={scopedLeads} />
         )}
@@ -523,6 +560,26 @@ function AppContent() {
         >
           <Truck className="size-5" />
           <span className="text-[10px] uppercase font-bold mt-1">Delivery</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setCurrentView('commissions')}
+          className={`flex-1 flex flex-col items-center justify-center py-1 transition-colors min-w-[54px] ${
+            currentView === 'commissions' ? 'text-cobalt font-bold' : 'text-sub hover:text-ink'
+          }`}
+        >
+          <Wallet className="size-5" />
+          <span className="text-[10px] uppercase font-bold mt-1">Earn</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setCurrentView('social_intake')}
+          className={`flex-1 flex flex-col items-center justify-center py-1 transition-colors min-w-[54px] ${
+            currentView === 'social_intake' ? 'text-cobalt font-bold' : 'text-sub hover:text-ink'
+          }`}
+        >
+          <Globe className="size-5" />
+          <span className="text-[10px] uppercase font-bold mt-1">Social</span>
         </button>
         <button
           type="button"
