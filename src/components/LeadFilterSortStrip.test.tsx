@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { LeadFilterSortStrip, type LeadFilter, type LeadSort } from './LeadFilterSortStrip';
+import { LeadFilterSortStrip } from './LeadFilterSortStrip';
 
 describe('LeadFilterSortStrip Component', () => {
   it('renders all filter chips, sort options, and lead counts', () => {
