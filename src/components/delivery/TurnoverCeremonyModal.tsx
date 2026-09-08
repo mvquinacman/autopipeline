@@ -73,7 +73,7 @@ export const TurnoverCeremonyModal: React.FC<TurnoverCeremonyModalProps> = ({
   const isReleased = appointment.status === 'released';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-ink/50 backdrop-blur-sm animate-fade-in">
+    <div className="fixed inset-0 m-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-ink/50 backdrop-blur-sm animate-fade-in">
       <div className="bg-card border border-line rounded-card max-w-3xl w-full p-4 sm:p-6 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-line pb-3">

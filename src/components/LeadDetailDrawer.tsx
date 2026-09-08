@@ -47,6 +47,7 @@ import {
   CheckCircle2,
   Truck,
   Receipt,
+  ChevronDown,
 } from 'lucide-react';
 
 interface LeadDetailDrawerProps {
@@ -158,6 +159,15 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
       setActivities(acts);
       setLoadingActivities(false);
     });
+  }, [lead]);
+
+  useEffect(() => {
+    if (!lead) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
   }, [lead]);
 
   if (!lead) return null;
@@ -350,7 +360,7 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-40 flex justify-end bg-ink/40 backdrop-blur-sm animate-fade-in">
+    <div className="fixed inset-0 m-0 z-40 flex justify-end bg-ink/40 backdrop-blur-sm animate-fade-in">
       <div className="w-full sm:max-w-lg bg-card border-l border-line h-full flex flex-col shadow-2xl overflow-hidden">
         {/* Drawer Header */}
         <div className="p-4 border-b border-line flex items-center justify-between bg-paper">
@@ -392,16 +402,19 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
               <div className="pt-2 border-t border-line flex items-center gap-2 text-xs">
                 <UserCheck className="size-3.5 text-cobalt shrink-0" />
                 <span className="text-sub font-semibold">Reassign:</span>
-                <select
-                  aria-label="Reassign lead"
-                  value={lead.agentId}
-                  onChange={(e) => handleReassign(e.target.value)}
-                  className="h-7 px-2 text-xs bg-card border border-line rounded text-ink focus:ring-1 focus:ring-cobalt"
-                >
-                  {profiles.filter((p) => p.role === 'agent').map((p) => (
-                    <option key={p.id} value={p.id}>{p.fullName}</option>
-                  ))}
-                </select>
+                <div className="relative inline-flex items-center">
+                  <select
+                    aria-label="Reassign lead"
+                    value={lead.agentId}
+                    onChange={(e) => handleReassign(e.target.value)}
+                    className="h-7 pl-2 pr-7 text-xs bg-card border border-line rounded text-ink appearance-none focus:ring-1 focus:ring-cobalt cursor-pointer"
+                  >
+                    {profiles.filter((p) => p.role === 'agent').map((p) => (
+                      <option key={p.id} value={p.id}>{p.fullName}</option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 size-3 text-sub pointer-events-none" />
+                </div>
               </div>
             </PermissionGate>
           </div>

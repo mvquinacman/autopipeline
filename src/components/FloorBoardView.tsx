@@ -9,6 +9,7 @@ import {
   Clock,
   Car,
   CheckCircle2,
+  ChevronDown,
 } from 'lucide-react';
 
 export const FloorBoardView: React.FC = () => {
@@ -184,20 +185,23 @@ export const FloorBoardView: React.FC = () => {
               {/* Status Switcher Controls */}
               <div className="flex items-center justify-between gap-1 pt-2 border-t border-line text-[11px]">
                 <span className="text-sub font-medium">Change Floor Status:</span>
-                <select
-                  aria-label={`Change status for ${entry.agentName}`}
-                  value={entry.status}
-                  onChange={(e) =>
-                    handleStatusChange(entry.agentId, e.target.value as AgentFloorStatus)
-                  }
-                  className="h-6 px-1.5 text-xs bg-paper border border-line rounded text-ink focus:border-cobalt focus:outline-none"
-                >
-                  <option value="up_next">Up Next</option>
-                  <option value="ready">On Floor</option>
-                  <option value="with_client">With Client</option>
-                  <option value="on_test_drive">On Demo Drive</option>
-                  <option value="off_floor">Off Floor</option>
-                </select>
+                <div className="relative inline-flex items-center">
+                  <select
+                    aria-label={`Change status for ${entry.agentName}`}
+                    value={entry.status}
+                    onChange={(e) =>
+                      handleStatusChange(entry.agentId, e.target.value as AgentFloorStatus)
+                    }
+                    className="h-6 pl-1.5 pr-5 text-xs bg-paper border border-line rounded text-ink appearance-none focus:border-cobalt focus:outline-none cursor-pointer"
+                  >
+                    <option value="up_next">Up Next</option>
+                    <option value="ready">On Floor</option>
+                    <option value="with_client">With Client</option>
+                    <option value="on_test_drive">On Demo Drive</option>
+                    <option value="off_floor">Off Floor</option>
+                  </select>
+                  <ChevronDown className="absolute right-1.5 top-1/2 -translate-y-1/2 size-3 text-sub pointer-events-none" />
+                </div>
               </div>
             </div>
           ))}

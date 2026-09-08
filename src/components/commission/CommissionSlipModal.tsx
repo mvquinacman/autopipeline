@@ -19,7 +19,7 @@ export const CommissionSlipModal: React.FC<CommissionSlipModalProps> = ({
   if (!isOpen || !commission) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink/50 backdrop-blur-sm animate-fade-in">
+    <div className="fixed inset-0 m-0 z-50 flex items-center justify-center p-4 bg-ink/50 backdrop-blur-sm animate-fade-in">
       <div className="bg-card border border-line rounded-card shadow-xl max-w-lg w-full overflow-hidden flex flex-col max-h-[90vh]">
         <div className="flex items-center justify-between p-4 border-b border-line bg-paper">
           <div className="flex items-center gap-2">

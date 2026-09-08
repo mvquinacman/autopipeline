@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { Lead } from '../types/crm';
-import { Compass, X, Check } from 'lucide-react';
+import { Compass, X, Check, ChevronDown } from 'lucide-react';
 
 interface TestDriveModalProps {
   isOpen: boolean;
@@ -48,7 +48,7 @@ export function TestDriveModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink/50 backdrop-blur-sm animate-fade-in">
+    <div className="fixed inset-0 m-0 z-50 flex items-center justify-center p-4 bg-ink/50 backdrop-blur-sm animate-fade-in">
       <div className="bg-card border border-line rounded-card max-w-lg w-full p-4 sm:p-6 shadow-xl space-y-4 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between border-b border-line pb-3">
           <div className="flex items-center gap-2">
@@ -79,17 +79,20 @@ export function TestDriveModal({
 
           <div>
             <label className="block font-semibold text-ink mb-1">Select Available Demo Fleet Unit *</label>
-            <select
-              value={selectedUnit}
-              onChange={(e) => setSelectedUnit(e.target.value)}
-              className="w-full h-10 sm:h-9 px-3 rounded-control border border-line bg-paper text-base sm:text-xs text-ink focus:ring-1 focus:ring-cobalt focus:outline-none"
-            >
-              {DEMO_FLEET.map((u) => (
-                <option key={u} value={u}>
-                  {u}
-                </option>
-              ))}
-            </select>
+            <div className="relative">
+              <select
+                value={selectedUnit}
+                onChange={(e) => setSelectedUnit(e.target.value)}
+                className="w-full h-10 sm:h-9 pl-3 pr-10 appearance-none rounded-control border border-line bg-paper text-base sm:text-xs text-ink focus:ring-1 focus:ring-cobalt focus:outline-none cursor-pointer"
+              >
+                {DEMO_FLEET.map((u) => (
+                  <option key={u} value={u}>
+                    {u}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 size-4 text-sub pointer-events-none" />
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

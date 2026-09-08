@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { LostReason } from '../types/crm';
-import { AlertTriangle, X } from 'lucide-react';
+import { AlertTriangle, X, ChevronDown } from 'lucide-react';
 
 interface MarkLostDialogProps {
   isOpen: boolean;
@@ -35,7 +35,7 @@ export const MarkLostDialog: React.FC<MarkLostDialogProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink/50 backdrop-blur-sm animate-fade-in">
+    <div className="fixed inset-0 m-0 z-50 flex items-center justify-center p-4 bg-ink/50 backdrop-blur-sm animate-fade-in">
       <div className="bg-card border border-line rounded-card max-w-md w-full p-6 shadow-lg space-y-4">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-2 text-overdue">
@@ -61,17 +61,20 @@ export const MarkLostDialog: React.FC<MarkLostDialogProps> = ({
             <label className="block text-xs font-semibold text-ink mb-1">
               Primary Reason for Loss
             </label>
-            <select
-              value={reason}
-              onChange={(e) => setReason(e.target.value as LostReason)}
-              className="w-full h-10 px-3 rounded-control border border-line bg-paper text-ink text-xs focus:ring-2 focus:ring-cobalt focus:outline-none"
-            >
-              {LOST_REASONS.map((r) => (
-                <option key={r.id} value={r.id}>
-                  {r.label}
-                </option>
-              ))}
-            </select>
+            <div className="relative">
+              <select
+                value={reason}
+                onChange={(e) => setReason(e.target.value as LostReason)}
+                className="w-full h-10 pl-3 pr-10 appearance-none rounded-control border border-line bg-paper text-ink text-xs focus:ring-2 focus:ring-cobalt focus:outline-none cursor-pointer"
+              >
+                {LOST_REASONS.map((r) => (
+                  <option key={r.id} value={r.id}>
+                    {r.label}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 size-4 text-sub pointer-events-none" />
+            </div>
           </div>
 
           <div>

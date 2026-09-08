@@ -1,5 +1,5 @@
 import React from 'react';
-import { AlertCircle, Flame, Car, Building2, ArrowUpDown, X } from 'lucide-react';
+import { AlertCircle, Flame, Car, Building2, ArrowUpDown, X, ChevronDown } from 'lucide-react';
 
 export type LeadFilter = 'all' | 'overdue' | 'high_value' | 'test_drive' | 'financing';
 export type LeadSort = 'default' | 'urgency' | 'value_desc' | 'value_asc' | 'name_asc' | 'updated_desc';
@@ -85,14 +85,14 @@ export const LeadFilterSortStrip: React.FC<LeadFilterSortStripProps> = ({
           )}
         </div>
 
-        <div className="flex items-center gap-1.5 bg-card border border-line rounded-control px-2 py-1 shadow-xs">
+        <div className="relative flex items-center gap-1.5 bg-card border border-line rounded-control pl-2 pr-6 py-1 shadow-xs">
           <ArrowUpDown className="size-3 text-sub shrink-0" />
           <label htmlFor="lead-sort-select" className="sr-only">Sort leads by</label>
           <select
             id="lead-sort-select"
             value={activeSort}
             onChange={(e) => onSelectSort(e.target.value as LeadSort)}
-            className="text-xs font-semibold bg-transparent text-ink border-none focus:outline-none cursor-pointer pr-1"
+            className="text-xs font-semibold bg-transparent text-ink border-none focus:outline-none cursor-pointer appearance-none pr-1"
           >
             {SORT_OPTIONS.map((opt) => (
               <option key={opt.id} value={opt.id} className="bg-card text-ink">
@@ -100,6 +100,7 @@ export const LeadFilterSortStrip: React.FC<LeadFilterSortStripProps> = ({
               </option>
             ))}
           </select>
+          <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 size-3 text-sub pointer-events-none" />
         </div>
       </div>
     </div>

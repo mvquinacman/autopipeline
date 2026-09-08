@@ -232,9 +232,10 @@ function AppContent() {
   }
 
   return (
-    <div className="min-h-screen bg-paper text-ink p-4 sm:p-6 pb-24 md:pb-8 font-sans max-w-7xl mx-auto space-y-6">
-      {/* Dealership Header */}
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-6 border-b border-line pb-4">
+    <div className="min-h-screen bg-paper text-ink font-sans">
+      <div className="p-4 sm:p-6 pb-24 md:pb-8 max-w-7xl mx-auto space-y-6">
+        {/* Dealership Header */}
+        <header className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-6 border-b border-line pb-4">
         <div className="flex items-center gap-3 shrink-0">
           <div className="size-10 rounded-control bg-cobalt text-white flex items-center justify-center font-display font-bold text-xl tracking-wider shrink-0 shadow-sm">
             AP
@@ -458,6 +459,7 @@ function AppContent() {
         {currentView === 'analytics' && (
           <FunnelAnalytics leads={scopedLeads} />
         )}
+      </div>
 
       <LeadDetailDrawer
         lead={selectedLead}

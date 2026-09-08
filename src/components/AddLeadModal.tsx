@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Profile, Lead } from '../types/crm';
 import { leadService, DuplicateCheckResult } from '../services/leadService';
 import { DuplicateGuardBanner } from './DuplicateGuardBanner';
-import { CheckCircle2, UserPlus, X } from 'lucide-react';
+import { CheckCircle2, UserPlus, X, ChevronDown } from 'lucide-react';
 
 interface AddLeadModalProps {
   isOpen: boolean;
@@ -91,7 +91,7 @@ export const AddLeadModal: React.FC<AddLeadModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink/50 backdrop-blur-sm animate-fade-in">
+    <div className="fixed inset-0 m-0 z-50 flex items-center justify-center p-4 bg-ink/50 backdrop-blur-sm animate-fade-in">
       <div className="bg-card border border-line rounded-card max-w-lg w-full p-4 sm:p-6 shadow-xl space-y-4 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between border-b border-line pb-3">
           <div className="flex items-center gap-2">
@@ -145,15 +145,18 @@ export const AddLeadModal: React.FC<AddLeadModalProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block font-semibold text-ink mb-1">Model of Interest</label>
-              <select
-                value={modelInterest}
-                onChange={(e) => handleModelChange(e.target.value)}
-                className="w-full h-10 px-3 rounded-control border border-line bg-paper text-base sm:text-xs text-ink focus:ring-2 focus:ring-cobalt focus:outline-none"
-              >
-                {VEHICLE_MODELS.map((m) => (
-                  <option key={m.name} value={m.name}>{m.name}</option>
-                ))}
-              </select>
+              <div className="relative">
+                <select
+                  value={modelInterest}
+                  onChange={(e) => handleModelChange(e.target.value)}
+                  className="w-full h-10 pl-3 pr-10 appearance-none rounded-control border border-line bg-paper text-base sm:text-xs text-ink focus:ring-2 focus:ring-cobalt focus:outline-none cursor-pointer"
+                >
+                  {VEHICLE_MODELS.map((m) => (
+                    <option key={m.name} value={m.name}>{m.name}</option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 size-4 text-sub pointer-events-none" />
+              </div>
             </div>
             <div>
               <label className="block font-semibold text-ink mb-1">Estimated Value (PHP)</label>
@@ -179,17 +182,20 @@ export const AddLeadModal: React.FC<AddLeadModalProps> = ({
             </div>
             <div>
               <label className="block font-semibold text-ink mb-1">Lead Source</label>
-              <select
-                value={source}
-                onChange={(e) => setSource(e.target.value)}
-                className="w-full h-10 px-3 rounded-control border border-line bg-paper text-base sm:text-xs text-ink focus:ring-2 focus:ring-cobalt focus:outline-none"
-              >
-                <option value="walk_in">Showroom Walk-in</option>
-                <option value="facebook">Facebook / Social</option>
-                <option value="website">Dealership Website</option>
-                <option value="referral">Client Referral</option>
-                <option value="repeat_buyer">Repeat Buyer</option>
-              </select>
+              <div className="relative">
+                <select
+                  value={source}
+                  onChange={(e) => setSource(e.target.value)}
+                  className="w-full h-10 pl-3 pr-10 appearance-none rounded-control border border-line bg-paper text-base sm:text-xs text-ink focus:ring-2 focus:ring-cobalt focus:outline-none cursor-pointer"
+                >
+                  <option value="walk_in">Showroom Walk-in</option>
+                  <option value="facebook">Facebook / Social</option>
+                  <option value="website">Dealership Website</option>
+                  <option value="referral">Client Referral</option>
+                  <option value="repeat_buyer">Repeat Buyer</option>
+                </select>
+                <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 size-4 text-sub pointer-events-none" />
+              </div>
             </div>
           </div>
 

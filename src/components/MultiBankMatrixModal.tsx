@@ -12,6 +12,7 @@ import {
   Plus,
   FileText,
   ShieldCheck,
+  ChevronDown,
 } from 'lucide-react';
 
 interface MultiBankMatrixModalProps {
@@ -136,7 +137,7 @@ export const MultiBankMatrixModal: React.FC<MultiBankMatrixModalProps> = ({
   const availableBanks = partnerBanks.filter((b) => !offers.some((o) => o.bankId === b.id));
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-ink/50 backdrop-blur-sm animate-fade-in">
+    <div className="fixed inset-0 m-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-ink/50 backdrop-blur-sm animate-fade-in">
       <div className="bg-card border border-line rounded-card max-w-4xl w-full p-4 sm:p-6 shadow-xl space-y-5 max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-line pb-3">
@@ -379,49 +380,58 @@ export const MultiBankMatrixModal: React.FC<MultiBankMatrixModalProps> = ({
                 <label className="block text-[11px] font-semibold text-sub uppercase mb-1">
                   Select Bank
                 </label>
-                <select
-                  value={selectedBankId}
-                  onChange={(e) => setSelectedBankId(e.target.value)}
-                  className="w-full h-9 px-2 rounded-control border border-line bg-card text-xs text-ink focus:border-cobalt focus:outline-none"
-                >
-                  {availableBanks.map((b) => (
-                    <option key={b.id} value={b.id}>
-                      {b.name} ({b.approvalRatePct}% approval rate)
-                    </option>
-                  ))}
-                </select>
+                <div className="relative">
+                  <select
+                    value={selectedBankId}
+                    onChange={(e) => setSelectedBankId(e.target.value)}
+                    className="w-full h-9 pl-2.5 pr-8 appearance-none rounded-control border border-line bg-card text-xs text-ink focus:border-cobalt focus:outline-none cursor-pointer"
+                  >
+                    {availableBanks.map((b) => (
+                      <option key={b.id} value={b.id}>
+                        {b.name} ({b.approvalRatePct}% approval rate)
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 size-3.5 text-sub pointer-events-none" />
+                </div>
               </div>
 
               <div>
                 <label className="block text-[11px] font-semibold text-sub uppercase mb-1">
                   Down Payment %
                 </label>
-                <select
-                  value={downPaymentPercent}
-                  onChange={(e) => setDownPaymentPercent(Number(e.target.value) as DownPaymentPercent)}
-                  className="w-full h-9 px-2 rounded-control border border-line bg-card text-xs text-ink focus:border-cobalt focus:outline-none"
-                >
-                  <option value={15}>15% Down Payment</option>
-                  <option value={20}>20% Standard DP</option>
-                  <option value={30}>30% Low Amortization DP</option>
-                  <option value={50}>50% High Equity DP</option>
-                </select>
+                <div className="relative">
+                  <select
+                    value={downPaymentPercent}
+                    onChange={(e) => setDownPaymentPercent(Number(e.target.value) as DownPaymentPercent)}
+                    className="w-full h-9 pl-2.5 pr-8 appearance-none rounded-control border border-line bg-card text-xs text-ink focus:border-cobalt focus:outline-none cursor-pointer"
+                  >
+                    <option value={15}>15% Down Payment</option>
+                    <option value={20}>20% Standard DP</option>
+                    <option value={30}>30% Low Amortization DP</option>
+                    <option value={50}>50% High Equity DP</option>
+                  </select>
+                  <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 size-3.5 text-sub pointer-events-none" />
+                </div>
               </div>
 
               <div>
                 <label className="block text-[11px] font-semibold text-sub uppercase mb-1">
                   Financing Term
                 </label>
-                <select
-                  value={termMonths}
-                  onChange={(e) => setTermMonths(Number(e.target.value) as LoanTerm)}
-                  className="w-full h-9 px-2 rounded-control border border-line bg-card text-xs text-ink focus:border-cobalt focus:outline-none"
-                >
-                  <option value={60}>60 Months (5 Years)</option>
-                  <option value={48}>48 Months (4 Years)</option>
-                  <option value={36}>36 Months (3 Years)</option>
-                  <option value={24}>24 Months (2 Years)</option>
-                </select>
+                <div className="relative">
+                  <select
+                    value={termMonths}
+                    onChange={(e) => setTermMonths(Number(e.target.value) as LoanTerm)}
+                    className="w-full h-9 pl-2.5 pr-8 appearance-none rounded-control border border-line bg-card text-xs text-ink focus:border-cobalt focus:outline-none cursor-pointer"
+                  >
+                    <option value={60}>60 Months (5 Years)</option>
+                    <option value={48}>48 Months (4 Years)</option>
+                    <option value={36}>36 Months (3 Years)</option>
+                    <option value={24}>24 Months (2 Years)</option>
+                  </select>
+                  <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 size-3.5 text-sub pointer-events-none" />
+                </div>
               </div>
             </div>
 
