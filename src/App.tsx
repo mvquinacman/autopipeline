@@ -18,7 +18,6 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider, useToast } from './context/ToastContext';
 import { LeadFilterSortStrip, type LeadFilter, type LeadSort } from './components/LeadFilterSortStrip';
 import { PermissionGate } from './components/auth/PermissionGate';
-import { AuthModal } from './components/auth/AuthModal';
 import { LandingPage } from './components/auth/LandingPage';
 import { FloorBoardView } from './components/FloorBoardView';
 import { InventoryMatrixView } from './components/InventoryMatrixView';
@@ -52,12 +51,8 @@ function AppContent() {
     session,
     currentProfile,
     profiles,
-    switchProfile,
     login,
     logout,
-    isAuthModalOpen,
-    openAuthModal,
-    closeAuthModal,
   } = useAuth();
   const { showToast } = useToast();
   const [currentView, setCurrentView] = useState<ViewMode>('pipeline');
@@ -122,6 +117,13 @@ function AppContent() {
   useEffect(() => {
     loadFollowUps();
   }, [loadFollowUps]);
+
+  // Guard against agents accessing managerial analytics view
+  useEffect(() => {
+    if (currentProfile?.role === 'agent' && currentView === 'analytics') {
+      setCurrentView('pipeline');
+    }
+  }, [currentProfile, currentView]);
 
   const handleAdvance = async (leadId: string) => {
     if (!currentProfile) return;
@@ -282,18 +284,13 @@ function AppContent() {
             <span>Add Lead</span>
           </button>
           <div className="hidden sm:block h-6 w-px bg-line mx-0.5" />
-          <RoleSwitcher
-            currentProfile={currentProfile}
-            profiles={profiles}
-            onSelectProfile={(p) => switchProfile(p.id)}
-            onOpenAuthModal={openAuthModal}
-          />
+          <RoleSwitcher currentProfile={currentProfile} />
           <button
             type="button"
             onClick={logout}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-control text-xs font-semibold bg-wash hover:bg-line text-sub hover:text-overdue border border-line transition-colors min-h-[36px]"
-            title="Sign Out / Lock Terminal"
-            aria-label="Sign Out / Lock Terminal"
+            title="Sign Out of Dealership Session"
+            aria-label="Sign Out"
           >
             <LogOut className="size-3.5" />
             <span className="hidden sm:inline">Sign Out</span>
@@ -306,6 +303,7 @@ function AppContent() {
         currentView={currentView}
         onSelectView={setCurrentView}
         overdueCount={kpis.overdueFollowUpsCount}
+        userRole={currentProfile.role}
       />
 
       {/* KPI Strip */}
@@ -596,19 +594,19 @@ function AppContent() {
           <Globe className="size-5" />
           <span className="text-[10px] uppercase font-bold mt-1">Social</span>
         </button>
-        <button
-          type="button"
-          onClick={() => setCurrentView('analytics')}
-          className={`flex-1 flex flex-col items-center justify-center py-1 transition-colors min-w-[54px] ${
-            currentView === 'analytics' ? 'text-cobalt font-bold' : 'text-sub hover:text-ink'
-          }`}
-        >
-          <BarChart3 className="size-5" />
-          <span className="text-[10px] uppercase font-bold mt-1">Analytics</span>
-        </button>
+        {currentProfile.role !== 'agent' && (
+          <button
+            type="button"
+            onClick={() => setCurrentView('analytics')}
+            className={`flex-1 flex flex-col items-center justify-center py-1 transition-colors min-w-[54px] ${
+              currentView === 'analytics' ? 'text-cobalt font-bold' : 'text-sub hover:text-ink'
+            }`}
+          >
+            <BarChart3 className="size-5" />
+            <span className="text-[10px] uppercase font-bold mt-1">Analytics</span>
+          </button>
+        )}
       </nav>
-
-      <AuthModal isOpen={isAuthModalOpen} onClose={closeAuthModal} />
 
       {matrixLead && (
         <MultiBankMatrixModal

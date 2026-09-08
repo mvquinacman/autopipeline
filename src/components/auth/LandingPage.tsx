@@ -50,6 +50,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLoginSuccess }) => {
       setError('Please enter your dealership corporate email.');
       return;
     }
+    if (!password.trim()) {
+      setError('Please enter your account password.');
+      return;
+    }
 
     const matched = profiles.find((p) => p.email.toLowerCase() === email.trim().toLowerCase());
     if (!matched) {
@@ -57,20 +61,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLoginSuccess }) => {
       return;
     }
 
-    const success = login(matched.id);
+    const success = login(matched.id, password.trim());
     if (success) {
       setError(null);
       if (onLoginSuccess) onLoginSuccess(matched);
     } else {
-      setError('Authentication failed. Check your credentials.');
+      setError('Authentication failed. Incorrect password.');
     }
-  };
-
-  const handleQuickDemoLogin = (profileId: string) => {
-    const matched = profiles.find((p) => p.id === profileId);
-    if (!matched) return;
-    login(matched.id);
-    if (onLoginSuccess) onLoginSuccess(matched);
   };
 
   const handleKeypadPress = (val: string) => {
@@ -329,38 +326,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLoginSuccess }) => {
             </form>
           )}
 
-          {/* Quick Demo Access Strip */}
-          <div className="pt-3 border-t border-line space-y-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-sub block text-center">
-              Quick Demonstration Bypass (One-Click)
-            </span>
-            <div className="grid grid-cols-3 gap-1.5">
-              <button
-                type="button"
-                onClick={() => handleQuickDemoLogin('user-agent-1')}
-                className="p-1.5 bg-paper hover:bg-wash text-ink rounded-control border border-line text-[11px] font-semibold text-center transition-colors truncate"
-              >
-                Paolo (Agent)
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickDemoLogin('user-mgr-1')}
-                className="p-1.5 bg-paper hover:bg-wash text-ink rounded-control border border-line text-[11px] font-semibold text-center transition-colors truncate"
-              >
-                Rafael (Manager)
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickDemoLogin('user-dp-1')}
-                className="p-1.5 bg-paper hover:bg-wash text-ink rounded-control border border-line text-[11px] font-semibold text-center transition-colors truncate"
-              >
-                Vicente (Principal)
-              </button>
-            </div>
-            <p className="text-[10px] text-sub text-center">
-              Demo PIN codes: Paolo <code>1111</code> • Camille <code>2222</code> • Rafael <code>3333</code> • Vicente <code>9999</code>
-            </p>
-          </div>
         </div>
 
         {/* Feature Spec-Strip */}

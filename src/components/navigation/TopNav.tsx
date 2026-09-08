@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import type { ViewMode } from './navItems';
+import type { Role } from '../../types/crm';
 import {
   Kanban, LayoutGrid, CalendarCheck, Users, Boxes, Building2,
   Wrench, Truck, Wallet, Globe, BarChart3, Layers, ChevronDown,
@@ -9,6 +10,7 @@ interface TopNavProps {
   currentView: ViewMode;
   onSelectView: (view: ViewMode) => void;
   overdueCount?: number;
+  userRole?: Role;
 }
 
 const DEAL_DESKS = [
@@ -17,7 +19,7 @@ const DEAL_DESKS = [
   { id: 'delivery' as ViewMode, label: 'Delivery Bay', icon: Truck },
   { id: 'social_intake' as ViewMode, label: 'Social Hub', icon: Globe },
 ];
-export const TopNav: React.FC<TopNavProps> = ({ currentView, onSelectView, overdueCount = 0 }) => {
+export const TopNav: React.FC<TopNavProps> = ({ currentView, onSelectView, overdueCount = 0, userRole }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -108,11 +110,13 @@ export const TopNav: React.FC<TopNavProps> = ({ currentView, onSelectView, overd
       </div>
 
       <button type="button" onClick={() => onSelectView('commissions')} className={btnStyle(currentView === 'commissions')}>
-        <Wallet className="size-3.5" /> Commissions
+        <Wallet className="size-3.5" /> {userRole === 'agent' ? 'My Commissions' : 'Commissions'}
       </button>
-      <button type="button" onClick={() => onSelectView('analytics')} className={btnStyle(currentView === 'analytics')}>
-        <BarChart3 className="size-3.5" /> Analytics
-      </button>
+      {userRole !== 'agent' && (
+        <button type="button" onClick={() => onSelectView('analytics')} className={btnStyle(currentView === 'analytics')}>
+          <BarChart3 className="size-3.5" /> Analytics
+        </button>
+      )}
     </nav>
   );
 };

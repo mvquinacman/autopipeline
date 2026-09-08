@@ -1,6 +1,6 @@
 import React from 'react';
 import { Profile } from '../types/crm';
-import { ShieldCheck, User, Users, Lock, ChevronDown } from 'lucide-react';
+import { ShieldCheck, User, Users } from 'lucide-react';
 
 interface RoleSwitcherProps {
   currentProfile: Profile;
@@ -11,7 +11,6 @@ interface RoleSwitcherProps {
 
 export const RoleSwitcher: React.FC<RoleSwitcherProps> = ({
   currentProfile,
-  onOpenAuthModal,
 }) => {
   const getRoleIcon = (role: Profile['role']) => {
     switch (role) {
@@ -48,12 +47,9 @@ export const RoleSwitcher: React.FC<RoleSwitcherProps> = ({
   };
 
   return (
-    <button
-      type="button"
-      onClick={onOpenAuthModal}
-      aria-label="Open terminal authentication"
-      title={`Logged in as ${currentProfile.fullName}. Click to switch terminal.`}
-      className="flex items-center gap-2 px-3 py-1.5 rounded-control bg-card hover:bg-wash border border-line hover:border-cobalt text-ink transition-all shadow-sm min-h-[36px] group"
+    <div
+      aria-label={`Active user: ${currentProfile.fullName}`}
+      className="flex items-center gap-2 px-3 py-1.5 rounded-control bg-card border border-line text-ink shadow-xs min-h-[36px]"
     >
       <div className="size-6 rounded-full bg-wash flex items-center justify-center shrink-0 border border-line">
         {getRoleIcon(currentProfile.role)}
@@ -62,10 +58,7 @@ export const RoleSwitcher: React.FC<RoleSwitcherProps> = ({
         <span className="text-xs font-bold text-ink">{currentProfile.fullName}</span>
         {getRoleBadge(currentProfile.role)}
       </div>
-      <div className="flex items-center gap-1 text-sub group-hover:text-cobalt ml-1">
-        <Lock className="size-3" />
-        <ChevronDown className="size-3" />
-      </div>
-    </button>
+    </div>
   );
 };
+

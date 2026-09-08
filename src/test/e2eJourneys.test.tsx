@@ -36,28 +36,26 @@ describe('AutoPipeline - End-to-End User Journey Verification', () => {
     // Default active profile is Agent Paolo Morales (7 leads scoped)
     expect(screen.getByText(/All Scoped Leads/)).toHaveTextContent('(7)');
 
-    // Switch role to Manager: Rafael Alcantara via Terminal Auth Modal
-    const switchTerminalBtn = screen.getByRole('button', { name: /Open terminal authentication/i });
-    fireEvent.click(switchTerminalBtn);
-
-    const authModal1 = (await screen.findByRole('heading', { name: /Showroom Terminal Auth/i })).closest('div.bg-card') as HTMLElement;
-    const rafaelCard = within(authModal1).getByText('Rafael Alcantara');
-    fireEvent.click(rafaelCard);
-    const instantSwitchBtn1 = within(authModal1).getByRole('button', { name: /Instant Switch \(Demo\)/i });
-    fireEvent.click(instantSwitchBtn1);
+    // Switch role to Manager: Rafael Alcantara via Sign Out & Login Terminal
+    fireEvent.click(screen.getByRole('button', { name: /Sign Out/i }));
+    fireEvent.click(await screen.findByText('Rafael Alcantara'));
+    ['3', '3', '3', '3'].forEach((num) => {
+      fireEvent.click(screen.getByRole('button', { name: num }));
+    });
+    fireEvent.click(screen.getByRole('button', { name: /Unlock Dealership Terminal/i }));
 
     await waitFor(() => {
       expect(screen.getByText(/All Scoped Leads/)).toHaveTextContent('(14)');
       expect(screen.getByText('Team Alpha Performance')).toBeInTheDocument();
     });
 
-    // Switch role to Dealer Principal: Vicente Tan via Terminal Auth Modal
-    fireEvent.click(screen.getByRole('button', { name: /Open terminal authentication/i }));
-    const authModal2 = (await screen.findByRole('heading', { name: /Showroom Terminal Auth/i })).closest('div.bg-card') as HTMLElement;
-    const vicenteCard = within(authModal2).getByText('Vicente Tan');
-    fireEvent.click(vicenteCard);
-    const instantSwitchBtn2 = within(authModal2).getByRole('button', { name: /Instant Switch \(Demo\)/i });
-    fireEvent.click(instantSwitchBtn2);
+    // Switch role to Dealer Principal: Vicente Tan via Sign Out & Login Terminal
+    fireEvent.click(screen.getByRole('button', { name: /Sign Out/i }));
+    fireEvent.click(await screen.findByText('Vicente Tan'));
+    ['9', '9', '9', '9'].forEach((num) => {
+      fireEvent.click(screen.getByRole('button', { name: num }));
+    });
+    fireEvent.click(screen.getByRole('button', { name: /Unlock Dealership Terminal/i }));
 
     await waitFor(() => {
       expect(screen.getByText(/All Scoped Leads/)).toHaveTextContent('(14)');
@@ -68,15 +66,27 @@ describe('AutoPipeline - End-to-End User Journey Verification', () => {
     render(<App />);
     const mainNav = screen.getByRole('navigation', { name: /Main Navigation/i });
 
-    // Switch to Follow-ups tab
+    // Switch to Follow-ups tab as agent
     const followUpsTab = within(mainNav).getByRole('button', { name: /Follow-ups/i });
     fireEvent.click(followUpsTab);
 
     // Follow-ups Hub rendered
     expect(await screen.findByText(/Active Tasks/i)).toBeInTheDocument();
 
-    // Switch to Analytics tab
-    const analyticsTab = within(mainNav).getByRole('button', { name: /Analytics/i });
+    // Verify agent does not have Managerial Analytics tab
+    expect(within(mainNav).queryByRole('button', { name: /Analytics/i })).not.toBeInTheDocument();
+
+    // Switch role to Manager: Rafael Alcantara via Sign Out & Login Terminal
+    fireEvent.click(screen.getByRole('button', { name: /Sign Out/i }));
+    fireEvent.click(await screen.findByText('Rafael Alcantara'));
+    ['3', '3', '3', '3'].forEach((num) => {
+      fireEvent.click(screen.getByRole('button', { name: num }));
+    });
+    fireEvent.click(screen.getByRole('button', { name: /Unlock Dealership Terminal/i }));
+
+    // Switch to Analytics tab as Manager
+    const managerNav = screen.getByRole('navigation', { name: /Main Navigation/i });
+    const analyticsTab = within(managerNav).getByRole('button', { name: /Analytics/i });
     fireEvent.click(analyticsTab);
 
     // Analytics Funnel rendered
@@ -85,7 +95,7 @@ describe('AutoPipeline - End-to-End User Journey Verification', () => {
     expect(screen.getByText('Top Vehicle Model Demand')).toBeInTheDocument();
 
     // Return to Pipeline
-    const pipelineTab = within(mainNav).getByRole('button', { name: /Pipeline/i });
+    const pipelineTab = within(managerNav).getByRole('button', { name: /Pipeline/i });
     fireEvent.click(pipelineTab);
     expect(await screen.findByText(/All Scoped Leads/)).toBeInTheDocument();
   });
@@ -315,15 +325,13 @@ describe('AutoPipeline - End-to-End User Journey Verification', () => {
     // Agent role cannot export CSV
     expect(screen.queryByRole('button', { name: /Export CSV/i })).not.toBeInTheDocument();
 
-    // Switch to Manager (Rafael Alcantara) who has lead:export permission via Terminal Auth
-    const switchTerminalBtn = screen.getByRole('button', { name: /Open terminal authentication/i });
-    fireEvent.click(switchTerminalBtn);
-
-    const authModal = (await screen.findByRole('heading', { name: /Showroom Terminal Auth/i })).closest('div.bg-card') as HTMLElement;
-    const rafaelCard = within(authModal).getByText('Rafael Alcantara');
-    fireEvent.click(rafaelCard);
-    const instantSwitchBtn = within(authModal).getByRole('button', { name: /Instant Switch \(Demo\)/i });
-    fireEvent.click(instantSwitchBtn);
+    // Switch to Manager (Rafael Alcantara) who has lead:export permission via Sign Out & Login Terminal
+    fireEvent.click(screen.getByRole('button', { name: /Sign Out/i }));
+    fireEvent.click(await screen.findByText('Rafael Alcantara'));
+    ['3', '3', '3', '3'].forEach((num) => {
+      fireEvent.click(screen.getByRole('button', { name: num }));
+    });
+    fireEvent.click(screen.getByRole('button', { name: /Unlock Dealership Terminal/i }));
 
     const exportBtn = await screen.findByRole('button', { name: /Export CSV/i });
     fireEvent.click(exportBtn);
@@ -429,27 +437,18 @@ describe('AutoPipeline - End-to-End User Journey Verification', () => {
     expect(await screen.findByText('Lead Inspector')).toBeInTheDocument();
     expect(screen.queryByRole('combobox', { name: /Reassign lead/i })).not.toBeInTheDocument();
 
-    // 3. Open Showroom Terminal Auth modal via Lock button
-    const lockBtn = screen.getByRole('button', { name: /Open terminal authentication/i });
-    fireEvent.click(lockBtn);
-
-    const heading = await screen.findByRole('heading', { name: /Showroom Terminal Auth/i });
-    const authModal = heading.closest('div.bg-card') as HTMLElement;
-
-    // 4. Select Rafael Alcantara (Manager) inside modal
-    const rafaelCard = within(authModal).getByText('Rafael Alcantara');
-    fireEvent.click(rafaelCard);
-
-    // Enter valid manager PIN: 3333
-    const pinInput = screen.getByPlaceholderText(/e\.g\. 3333/i);
-    fireEvent.change(pinInput, { target: { value: '3333' } });
-
-    const authBtn = screen.getByRole('button', { name: /Authenticate & Switch/i });
-    fireEvent.click(authBtn);
-
-    await waitFor(() => {
-      expect(screen.queryByRole('heading', { name: /Showroom Terminal Auth/i })).not.toBeInTheDocument();
+    // 3. Switch to Manager (Rafael Alcantara) via Sign Out & Login Terminal
+    fireEvent.click(screen.getByRole('button', { name: /Sign Out/i }));
+    fireEvent.click(await screen.findByText('Rafael Alcantara'));
+    ['3', '3', '3', '3'].forEach((num) => {
+      fireEvent.click(screen.getByRole('button', { name: num }));
     });
+    fireEvent.click(screen.getByRole('button', { name: /Unlock Dealership Terminal/i }));
+
+    // 4. Open Lead Drawer as Manager
+    const managerLeadCards = await screen.findAllByText('Toyota Fortuner 2.8 LTD');
+    fireEvent.click(managerLeadCards[0]);
+    expect(await screen.findByText('Lead Inspector')).toBeInTheDocument();
 
     // 5. Now Manager is active and Reassign dropdown is visible
     expect(screen.getByRole('combobox', { name: /Reassign lead/i })).toBeInTheDocument();
@@ -887,15 +886,17 @@ describe('AutoPipeline - End-to-End User Journey Verification', () => {
     fireEvent.click(closeVoucherBtn);
     expect(screen.queryByRole('heading', { name: /Commission Voucher & Payout Slip/i })).not.toBeInTheDocument();
 
-    // 4. Switch to Manager role via Showroom Terminal Auth Modal
-    const switchTerminalBtn = screen.getByRole('button', { name: /Open terminal authentication/i });
-    fireEvent.click(switchTerminalBtn);
+    // 4. Switch to Manager role via Sign Out & Login Terminal
+    fireEvent.click(screen.getByRole('button', { name: /Sign Out/i }));
+    fireEvent.click(await screen.findByText('Rafael Alcantara'));
+    ['3', '3', '3', '3'].forEach((num) => {
+      fireEvent.click(screen.getByRole('button', { name: num }));
+    });
+    fireEvent.click(screen.getByRole('button', { name: /Unlock Dealership Terminal/i }));
 
-    const authModal = (await screen.findByRole('heading', { name: /Showroom Terminal Auth/i })).closest('div.bg-card') as HTMLElement;
-    const rafaelCard = within(authModal).getByText('Rafael Alcantara');
-    fireEvent.click(rafaelCard);
-    const instantSwitchBtn = within(authModal).getByRole('button', { name: /Instant Switch \(Demo\)/i });
-    fireEvent.click(instantSwitchBtn);
+    // Switch to Commissions tab as Manager
+    const managerMainNav = screen.getByRole('navigation', { name: /Main Navigation/i });
+    fireEvent.click(within(managerMainNav).getByRole('button', { name: /Commissions/i }));
 
     // 5. In Commissions view as Manager, verify GSM clearance ledger renders
     expect(await screen.findByText('Dealership Commission & Incentive Ledger')).toBeInTheDocument();
