@@ -1,5 +1,7 @@
 # AutoPipeline — Automotive Dealership Sales Operating System
 
+**Live Production URL:** [https://agitated-rutherford.vercel.app](https://agitated-rutherford.vercel.app)
+
 Production-grade sales pipeline, F&I finance desk, showroom up-system, demo fleet scheduling, and delivery turnover OS engineered for automotive retail dealerships in the Philippines.
 
 Built with **React 18**, **TypeScript**, **Tailwind CSS**, and **Vitest**. Supports standalone in-memory operation out of the box with zero external dependencies, plus optional Supabase backend synchronization.
