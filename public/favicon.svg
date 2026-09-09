@@ -1,0 +1,43 @@
+
+  <svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#1E4FD6" />
+        <stop offset="100%" stop-color="#0F1826" />
+      </linearGradient>
+      <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#189A5A" />
+        <stop offset="100%" stop-color="#2E7BD6" />
+      </linearGradient>
+    </defs>
+    
+    <!-- Background Card -->
+    <rect x="3" y="3" width="58" height="58" rx="14" fill="url(#bgGrad)" />
+    
+    <!-- Speed Chevron Accent Line -->
+    <path d="M 14.600000000000001 16.92 L 49.400000000000006 16.92 L 45.92 19.240000000000002 L 18.08 19.240000000000002 Z" fill="url(#accentGrad)" opacity="0.9" />
+
+    <!-- AP Automotive Monogram -->
+    <text x="32" y="38.48" 
+          font-family="'Barlow Condensed', 'Inter', -apple-system, sans-serif" 
+          font-weight="800" 
+          font-size="27" 
+          fill="#FFFFFF" 
+          text-anchor="middle" 
+          letter-spacing="1">AP</text>
+    
+    <!-- Automotive Subtitle -->
+    <text x="32" y="48.739999999999995" 
+          font-family="'Inter', -apple-system, sans-serif" 
+          font-weight="700" 
+          font-size="7" 
+          fill="#93C5FD" 
+          text-anchor="middle" 
+          letter-spacing="3">AUTOPIPELINE</text>
+          
+    <!-- Dynamic Indicator dots -->
+    <circle cx="21.560000000000002" cy="50.559999999999995" r="2" fill="#189A5A" />
+    <circle cx="32" cy="50.559999999999995" r="2" fill="#E8A013" />
+    <circle cx="42.44" cy="50.559999999999995" r="2" fill="#2E7BD6" />
+  </svg>
+  

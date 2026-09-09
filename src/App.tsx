@@ -28,6 +28,7 @@ import { DeliveryBayView } from './components/DeliveryBayView';
 import { CommissionsView } from './components/CommissionsView';
 import { SocialIntakeView } from './components/SocialIntakeView';
 import { TopNav } from './components/navigation/TopNav';
+import { PwaInstallPrompt } from './components/pwa/PwaInstallPrompt';
 import type { ViewMode } from './components/navigation/navItems';
 import {
   Plus,
@@ -627,6 +628,7 @@ export default function App() {
     <AuthProvider>
       <ToastProvider>
         <AppContent />
+        <PwaInstallPrompt />
       </ToastProvider>
     </AuthProvider>
   );
