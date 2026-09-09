@@ -1,6 +1,7 @@
 import type { Lead } from '../types/crm';
 import { formatPeso } from '../data/seed';
 import { Printer, X, FileText } from 'lucide-react';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
 interface QuotationModalProps {
   isOpen: boolean;
@@ -9,6 +10,7 @@ interface QuotationModalProps {
 }
 
 export function QuotationModal({ isOpen, lead, onClose }: QuotationModalProps) {
+  useBodyScrollLock(isOpen && Boolean(lead));
   if (!isOpen || !lead) return null;
 
   const quoteNumber = `MMM-QT-2026-${lead.id.slice(-4).toUpperCase()}`;
@@ -25,8 +27,8 @@ export function QuotationModal({ isOpen, lead, onClose }: QuotationModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 m-0 z-50 flex items-center justify-center p-4 bg-ink/50 backdrop-blur-sm animate-fade-in print:p-0 print:bg-white print:static">
-      <div className="bg-card border border-line rounded-card max-w-2xl w-full p-6 sm:p-8 shadow-xl space-y-6 max-h-[95vh] overflow-y-auto print:border-none print:shadow-none print:max-w-none print:p-0">
+    <div className="fixed inset-0 m-0 z-50 flex items-center justify-center p-3 sm:p-4 pt-[max(1rem,env(safe-area-inset-top,0px))] pb-[max(1rem,env(safe-area-inset-bottom,0px))] bg-ink/50 backdrop-blur-sm animate-fade-in print:p-0 print:bg-white print:static overscroll-none touch-none">
+      <div className="bg-card border border-line rounded-card max-w-2xl w-full p-4 sm:p-8 shadow-xl space-y-6 max-h-[95dvh] modal-scroll-container touch-auto overflow-y-auto print:border-none print:shadow-none print:max-w-none print:p-0">
         {/* Screen Action Bar (Hidden on print) */}
         <div className="flex items-center justify-between border-b border-line pb-3 print:hidden">
           <div className="flex items-center gap-2">

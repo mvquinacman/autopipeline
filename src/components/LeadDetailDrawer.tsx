@@ -26,6 +26,7 @@ import { CommissionSlipModal } from './commission/CommissionSlipModal';
 import { commissionService } from '../services/commissionService';
 import type { CommissionRecord } from '../types/commission';
 import { PermissionGate } from './auth/PermissionGate';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import {
   X,
   ChevronRight,
@@ -65,6 +66,8 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
   onClose,
   onLeadUpdated,
 }) => {
+  useBodyScrollLock(Boolean(lead));
+
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loadingActivities, setLoadingActivities] = useState(false);
   const [showLostDialog, setShowLostDialog] = useState(false);
@@ -360,21 +363,26 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 m-0 z-40 flex justify-end bg-ink/40 backdrop-blur-sm animate-fade-in">
-      <div className="w-full sm:max-w-lg bg-card border-l border-line h-full flex flex-col shadow-2xl overflow-hidden">
+    <div className="fixed inset-0 m-0 z-40 flex justify-end bg-ink/40 backdrop-blur-sm animate-fade-in overscroll-none touch-none">
+      <div className="w-full sm:max-w-lg bg-card border-l border-line h-[100dvh] max-h-[100dvh] flex flex-col shadow-2xl overflow-hidden touch-auto">
         {/* Drawer Header */}
-        <div className="p-4 border-b border-line flex items-center justify-between bg-paper">
+        <div className="px-4 pt-[max(1rem,calc(env(safe-area-inset-top,0px)+0.75rem))] pb-3.5 border-b border-line flex items-center justify-between bg-paper shrink-0">
           <div className="space-y-0.5">
             <span className="text-[10.5px] uppercase font-bold text-sub tracking-wider">Lead Inspector</span>
             <h2 className="font-display text-xl font-bold text-ink leading-none">{lead.modelInterest}</h2>
           </div>
-          <button type="button" onClick={onClose} className="p-1.5 rounded-control text-sub hover:text-ink hover:bg-wash">
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close Lead Inspector"
+            className="size-9 rounded-control text-sub hover:text-ink hover:bg-wash flex items-center justify-center shrink-0 min-h-[44px] min-w-[44px]"
+          >
             <X className="size-5" />
           </button>
         </div>
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-6">
+        <div className="flex-1 modal-scroll-container p-4 space-y-6 pb-[max(3rem,calc(env(safe-area-inset-bottom,0px)+2rem))]">
           {/* Customer & Value Card */}
           <div className="bg-paper border border-line rounded-control p-3 space-y-2">
             <div className="flex items-center justify-between">

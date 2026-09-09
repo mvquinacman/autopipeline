@@ -5,7 +5,7 @@ import { socialIntakeService } from '../services/socialIntakeService';
 import { SocialLeadCard } from './social/SocialLeadCard';
 import { SimulateLeadAdModal } from './social/SimulateLeadAdModal';
 import { SocialKpiStrip } from './social/SocialKpiStrip';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Globe } from 'lucide-react';
 
 interface SocialIntakeViewProps {
   currentProfile: Profile;
@@ -59,6 +59,19 @@ export const SocialIntakeView: React.FC<SocialIntakeViewProps> = ({
 
   return (
     <div className="space-y-6">
+      {/* View Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-line pb-4">
+        <div>
+          <div className="flex items-center gap-2">
+            <Globe className="size-5 text-cobalt" />
+            <h2 className="font-display text-2xl font-bold text-ink">Social Lead Intake Hub</h2>
+          </div>
+          <p className="text-xs text-sub">
+            Meta Lead Ads, Viber Inquiries &amp; Website Inquiries with 15-Minute Dealership SLA
+          </p>
+        </div>
+      </div>
+
       <SocialKpiStrip kpis={kpis} />
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">

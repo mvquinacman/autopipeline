@@ -1,6 +1,7 @@
 import React from 'react';
 import type { GatePassRecord } from '../../types/delivery';
 import { Printer, X, ShieldAlert, CheckCircle2 } from 'lucide-react';
+import { useBodyScrollLock } from '../../hooks/useBodyScrollLock';
 
 interface GatePassModalProps {
   isOpen: boolean;
@@ -9,6 +10,7 @@ interface GatePassModalProps {
 }
 
 export const GatePassModal: React.FC<GatePassModalProps> = ({ isOpen, gatePass, onClose }) => {
+  useBodyScrollLock(isOpen && Boolean(gatePass));
   if (!isOpen || !gatePass) return null;
 
   const handlePrint = () => {
@@ -16,8 +18,8 @@ export const GatePassModal: React.FC<GatePassModalProps> = ({ isOpen, gatePass, 
   };
 
   return (
-    <div className="fixed inset-0 m-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-ink/50 backdrop-blur-sm animate-fade-in print:p-0 print:bg-white print:static">
-      <div className="bg-card border border-line rounded-card max-w-2xl w-full p-4 sm:p-6 shadow-2xl space-y-4 max-h-[95vh] overflow-y-auto print:border-none print:shadow-none print:max-w-none print:p-0">
+    <div className="fixed inset-0 m-0 z-50 flex items-center justify-center p-3 sm:p-4 pt-[max(1rem,env(safe-area-inset-top,0px))] pb-[max(1rem,env(safe-area-inset-bottom,0px))] bg-ink/50 backdrop-blur-sm animate-fade-in print:p-0 print:bg-white print:static overscroll-none touch-none">
+      <div className="bg-card border border-line rounded-card max-w-2xl w-full p-4 sm:p-6 shadow-2xl space-y-4 max-h-[95dvh] modal-scroll-container touch-auto print:border-none print:shadow-none print:max-w-none print:p-0">
         {/* Screen Action Bar (Hidden on print) */}
         <div className="flex items-center justify-between border-b border-line pb-3 print:hidden">
           <div className="flex items-center gap-2">

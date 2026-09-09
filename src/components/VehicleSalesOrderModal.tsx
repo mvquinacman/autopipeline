@@ -9,6 +9,7 @@ import {
   FileText,
   Sliders,
 } from 'lucide-react';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
 interface VehicleSalesOrderModalProps {
   isOpen: boolean;
@@ -27,6 +28,7 @@ export const VehicleSalesOrderModal: React.FC<VehicleSalesOrderModalProps> = ({
   initialMode = 'vso',
   onOrderGenerated,
 }) => {
+  useBodyScrollLock(isOpen && Boolean(lead));
   const [mode, setMode] = useState<DocumentMode>(initialMode);
   const [isConfiguring, setIsConfiguring] = useState(false);
   const [discount, setDiscount] = useState(50000);
@@ -71,8 +73,8 @@ export const VehicleSalesOrderModal: React.FC<VehicleSalesOrderModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 m-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-ink/50 backdrop-blur-sm animate-fade-in print:p-0 print:bg-white print:static">
-      <div className="bg-card border border-line rounded-card max-w-4xl w-full p-4 sm:p-6 shadow-2xl space-y-4 max-h-[95vh] overflow-y-auto print:border-none print:shadow-none print:max-w-none print:p-0 print:max-h-none print:overflow-visible">
+    <div className="fixed inset-0 m-0 z-50 flex items-center justify-center p-2 sm:p-4 pt-[max(1rem,env(safe-area-inset-top,0px))] pb-[max(1rem,env(safe-area-inset-bottom,0px))] bg-ink/50 backdrop-blur-sm animate-fade-in print:p-0 print:bg-white print:static overscroll-none touch-none">
+      <div className="bg-card border border-line rounded-card max-w-4xl w-full p-4 sm:p-6 shadow-2xl space-y-4 max-h-[95dvh] modal-scroll-container touch-auto print:border-none print:shadow-none print:max-w-none print:p-0 print:max-h-none print:overflow-visible">
         {/* Screen Toolbar (Hidden when printing) */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-line pb-3 print:hidden">
           <div className="flex items-center gap-2">

@@ -2,6 +2,7 @@ import React from 'react';
 import type { CommissionRecord } from '../../types/commission';
 import { formatPeso } from '../../data/seed';
 import { X, Receipt, Printer } from 'lucide-react';
+import { useBodyScrollLock } from '../../hooks/useBodyScrollLock';
 
 interface CommissionSlipModalProps {
   isOpen: boolean;
@@ -16,12 +17,13 @@ export const CommissionSlipModal: React.FC<CommissionSlipModalProps> = ({
   onClose,
   onApprove,
 }) => {
+  useBodyScrollLock(isOpen && Boolean(commission));
   if (!isOpen || !commission) return null;
 
   return (
-    <div className="fixed inset-0 m-0 z-50 flex items-center justify-center p-4 bg-ink/50 backdrop-blur-sm animate-fade-in">
-      <div className="bg-card border border-line rounded-card shadow-xl max-w-lg w-full overflow-hidden flex flex-col max-h-[90vh]">
-        <div className="flex items-center justify-between p-4 border-b border-line bg-paper">
+    <div className="fixed inset-0 m-0 z-50 flex items-center justify-center p-3 sm:p-4 pt-[max(1rem,env(safe-area-inset-top,0px))] pb-[max(1rem,env(safe-area-inset-bottom,0px))] bg-ink/50 backdrop-blur-sm animate-fade-in overscroll-none touch-none">
+      <div className="bg-card border border-line rounded-card shadow-xl max-w-lg w-full overflow-hidden flex flex-col max-h-[90dvh] touch-auto">
+        <div className="flex items-center justify-between p-4 border-b border-line bg-paper shrink-0">
           <div className="flex items-center gap-2">
             <div className="p-1.5 rounded-control bg-cobalt-tint text-cobalt"><Receipt className="size-4" /></div>
             <div>
@@ -29,10 +31,10 @@ export const CommissionSlipModal: React.FC<CommissionSlipModalProps> = ({
               <p className="text-[11px] text-sub font-mono">{commission.id} • Ref: {commission.vin}</p>
             </div>
           </div>
-          <button type="button" onClick={onClose} className="p-1 rounded-control hover:bg-line text-sub"><X className="size-4" /></button>
+          <button type="button" onClick={onClose} aria-label="Dismiss voucher" className="p-2 rounded-control hover:bg-line text-sub min-h-[44px] min-w-[44px] flex items-center justify-center"><X className="size-4" /></button>
         </div>
 
-        <div className="p-4 space-y-4 overflow-y-auto text-xs">
+        <div className="p-4 space-y-4 modal-scroll-container text-xs">
           <div className="bg-paper p-3 rounded-control border border-line space-y-1">
             <div className="flex justify-between font-bold text-ink text-sm">
               <span>{commission.customerName}</span>

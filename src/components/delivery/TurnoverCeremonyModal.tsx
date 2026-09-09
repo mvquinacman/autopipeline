@@ -13,6 +13,7 @@ import {
   Star,
   Printer,
 } from 'lucide-react';
+import { useBodyScrollLock } from '../../hooks/useBodyScrollLock';
 
 interface TurnoverCeremonyModalProps {
   isOpen: boolean;
@@ -31,6 +32,7 @@ export const TurnoverCeremonyModal: React.FC<TurnoverCeremonyModalProps> = ({
   onClose,
   onAppointmentUpdated,
 }) => {
+  useBodyScrollLock(isOpen && Boolean(appointment));
   const [activeTab, setActiveTab] = useState<TabMode>('ceremony');
   const [showGatePass, setShowGatePass] = useState(false);
   const [isReleasing, setIsReleasing] = useState(false);
@@ -73,8 +75,8 @@ export const TurnoverCeremonyModal: React.FC<TurnoverCeremonyModalProps> = ({
   const isReleased = appointment.status === 'released';
 
   return (
-    <div className="fixed inset-0 m-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-ink/50 backdrop-blur-sm animate-fade-in">
-      <div className="bg-card border border-line rounded-card max-w-3xl w-full p-4 sm:p-6 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto">
+    <div className="fixed inset-0 m-0 z-50 flex items-center justify-center p-3 sm:p-4 pt-[max(1rem,env(safe-area-inset-top,0px))] pb-[max(1rem,env(safe-area-inset-bottom,0px))] bg-ink/50 backdrop-blur-sm animate-fade-in overscroll-none touch-none">
+      <div className="bg-card border border-line rounded-card max-w-3xl w-full p-4 sm:p-6 shadow-2xl space-y-4 max-h-[92dvh] modal-scroll-container touch-auto">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-line pb-3">
           <div className="flex items-center gap-2">

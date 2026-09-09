@@ -14,6 +14,7 @@ import {
   ShieldCheck,
   ChevronDown,
 } from 'lucide-react';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
 interface MultiBankMatrixModalProps {
   isOpen: boolean;
@@ -28,6 +29,7 @@ export const MultiBankMatrixModal: React.FC<MultiBankMatrixModalProps> = ({
   lead,
   onOfferAccepted,
 }) => {
+  useBodyScrollLock(isOpen);
   const [offers, setOffers] = useState<BankOffer[]>([]);
   const [partnerBanks, setPartnerBanks] = useState<PartnerBank[]>([]);
   const [isSubmittingNew, setIsSubmittingNew] = useState(false);
@@ -137,8 +139,8 @@ export const MultiBankMatrixModal: React.FC<MultiBankMatrixModalProps> = ({
   const availableBanks = partnerBanks.filter((b) => !offers.some((o) => o.bankId === b.id));
 
   return (
-    <div className="fixed inset-0 m-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-ink/50 backdrop-blur-sm animate-fade-in">
-      <div className="bg-card border border-line rounded-card max-w-4xl w-full p-4 sm:p-6 shadow-xl space-y-5 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 m-0 z-50 flex items-center justify-center p-3 sm:p-4 pt-[max(1rem,env(safe-area-inset-top,0px))] pb-[max(1rem,env(safe-area-inset-bottom,0px))] bg-ink/50 backdrop-blur-sm animate-fade-in overscroll-none touch-none">
+      <div className="bg-card border border-line rounded-card max-w-4xl w-full p-4 sm:p-6 shadow-xl space-y-5 max-h-[90dvh] modal-scroll-container touch-auto">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-line pb-3">
           <div className="flex items-center gap-3">

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { LostReason } from '../types/crm';
 import { AlertTriangle, X, ChevronDown } from 'lucide-react';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
 interface MarkLostDialogProps {
   isOpen: boolean;
@@ -23,6 +24,7 @@ export const MarkLostDialog: React.FC<MarkLostDialogProps> = ({
   onClose,
   onConfirm,
 }) => {
+  useBodyScrollLock(isOpen);
   const [reason, setReason] = useState<LostReason>('bought_elsewhere');
   const [note, setNote] = useState('');
 
@@ -35,8 +37,8 @@ export const MarkLostDialog: React.FC<MarkLostDialogProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 m-0 z-50 flex items-center justify-center p-4 bg-ink/50 backdrop-blur-sm animate-fade-in">
-      <div className="bg-card border border-line rounded-card max-w-md w-full p-6 shadow-lg space-y-4">
+    <div className="fixed inset-0 m-0 z-50 flex items-center justify-center p-3 sm:p-4 pt-[max(1rem,env(safe-area-inset-top,0px))] pb-[max(1rem,env(safe-area-inset-bottom,0px))] bg-ink/50 backdrop-blur-sm animate-fade-in overscroll-none touch-none">
+      <div className="bg-card border border-line rounded-card max-w-md w-full p-6 shadow-lg space-y-4 max-h-[90dvh] modal-scroll-container touch-auto">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-2 text-overdue">
             <AlertTriangle className="size-5 shrink-0" />

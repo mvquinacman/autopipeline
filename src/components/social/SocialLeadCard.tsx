@@ -18,10 +18,10 @@ export const SocialLeadCard: React.FC<SocialLeadCardProps> = ({
 }) => {
   return (
     <div className="bg-card border border-line rounded-card p-4 space-y-3 hover:border-cobalt/60 transition-colors shadow-sm">
-      <div className="flex items-start justify-between gap-2">
-        <div className="space-y-0.5">
-          <div className="flex items-center gap-2">
-            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+      <div className="flex items-start justify-between gap-2.5">
+        <div className="space-y-1 min-w-0 flex-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider shrink-0 ${
               lead.channel === 'meta_lead_ad'
                 ? 'bg-cobalt text-white'
                 : lead.channel === 'viber_inquiry'
@@ -30,10 +30,10 @@ export const SocialLeadCard: React.FC<SocialLeadCardProps> = ({
             }`}>
               {lead.channel === 'meta_lead_ad' ? 'Meta Lead Ad' : lead.channel === 'viber_inquiry' ? 'Viber' : 'Website'}
             </span>
-            <span className="text-xs text-sub truncate max-w-[200px]">{lead.campaignName}</span>
+            <span className="text-xs text-sub truncate max-w-[180px] sm:max-w-[240px] font-medium">{lead.campaignName}</span>
           </div>
-          <h4 className="text-sm font-bold text-ink">{lead.customerName}</h4>
-          <p className="text-xs text-sub">{lead.customerPhone} • {lead.customerEmail}</p>
+          <h4 className="text-sm font-bold text-ink leading-snug">{lead.customerName}</h4>
+          <p className="text-xs text-sub tabular-nums">{lead.customerPhone} • {lead.customerEmail}</p>
         </div>
         <SlaCountdownTimer
           deadline={lead.slaDeadline}
@@ -57,17 +57,18 @@ export const SocialLeadCard: React.FC<SocialLeadCardProps> = ({
         )}
       </div>
 
-      <div className="flex items-center justify-between pt-1 border-t border-line/60 text-xs">
-        <span className="text-sub text-[11px]">
-          Assigned: <strong className="text-ink">{lead.assignedAgentName || 'Unassigned'}</strong>
-        </span>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 border-t border-line/60 text-xs">
+        <div className="text-sub text-[11px] flex items-center gap-1.5">
+          <span>Assigned:</span>
+          <strong className="text-ink font-semibold">{lead.assignedAgentName || 'Unassigned'}</strong>
+        </div>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 flex-wrap justify-start sm:justify-end">
           {lead.status === 'unclaimed' && onClaim && (
             <button
               type="button"
               onClick={() => onClaim(lead.id)}
-              className="px-2 py-1 text-[11px] font-semibold text-sub hover:text-cobalt border border-line rounded"
+              className="px-2.5 py-1 text-[11px] font-semibold text-sub hover:text-cobalt border border-line rounded bg-wash hover:bg-line transition-colors"
             >
               Claim
             </button>
@@ -95,7 +96,7 @@ export const SocialLeadCard: React.FC<SocialLeadCardProps> = ({
                 type="button"
                 onClick={() => onConvert(lead.id)}
                 title="Convert to CRM lead"
-                className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold bg-cobalt hover:bg-cobalt-press text-white rounded shadow-sm transition-colors"
+                className="inline-flex items-center gap-1 px-3 py-1 text-[11px] font-bold bg-cobalt hover:bg-cobalt-press text-white rounded shadow-sm transition-colors"
               >
                 Pipeline <ArrowRight className="size-3" />
               </button>

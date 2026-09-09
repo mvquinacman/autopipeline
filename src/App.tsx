@@ -225,8 +225,11 @@ function AppContent() {
   }
 
   return (
-    <div className="min-h-screen bg-paper text-ink font-sans">
-      <div className="px-4 sm:px-6 pt-[max(1rem,env(safe-area-inset-top,0px))] pb-[max(6rem,calc(env(safe-area-inset-bottom,0px)+5.5rem))] md:pb-8 max-w-7xl mx-auto space-y-5 sm:space-y-6">
+    <div className="min-h-screen bg-paper text-ink font-sans relative">
+      {/* iOS Safe Area Status Bar Backdrop */}
+      <div className="fixed top-0 inset-x-0 h-[max(1.25rem,calc(env(safe-area-inset-top,0px)+0.25rem))] bg-paper/95 backdrop-blur-md z-25 pointer-events-none" />
+
+      <div className="px-4 sm:px-6 pt-[max(1.25rem,calc(env(safe-area-inset-top,0px)+0.75rem))] pb-[max(6rem,calc(env(safe-area-inset-bottom,0px)+5.5rem))] md:pb-8 max-w-7xl mx-auto space-y-5 sm:space-y-6">
         {/* Dealership Header */}
         <header className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-6 border-b border-line pb-4">
         <div className="flex items-center gap-3 shrink-0">

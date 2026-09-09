@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import type { ViewMode } from './navItems';
 import type { Role } from '../../types/crm';
+import { useBodyScrollLock } from '../../hooks/useBodyScrollLock';
 import {
   Kanban,
   LayoutGrid,
@@ -32,6 +33,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   userRole,
 }) => {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  useBodyScrollLock(isSheetOpen);
 
   const deskItems = [
     { id: 'inventory' as ViewMode, label: 'Stock Matrix', desc: 'Fleet VINs & 48h holds', icon: Boxes },
@@ -132,12 +134,12 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
 
       {/* Deal Desks Action Sheet for Mobile */}
       {isSheetOpen && (
-        <div className="md:hidden fixed inset-0 z-50 flex flex-col justify-end">
+        <div className="md:hidden fixed inset-0 z-50 flex flex-col justify-end overscroll-none touch-none">
           <div
             className="fixed inset-0 bg-ink/40 backdrop-blur-xs transition-opacity"
             onClick={() => setIsSheetOpen(false)}
           />
-          <div className="relative bg-card rounded-t-2xl border-t border-line shadow-2xl p-4 pb-[max(1.5rem,env(safe-area-inset-bottom,0px))] max-h-[80vh] overflow-y-auto space-y-3 z-10 animate-slide-up">
+          <div className="relative bg-card rounded-t-2xl border-t border-line shadow-2xl p-4 pb-[max(2rem,calc(env(safe-area-inset-bottom,0px)+1rem))] max-h-[80dvh] modal-scroll-container space-y-3 z-10 animate-slide-up touch-auto">
             <div className="flex items-center justify-between pb-2 border-b border-line">
               <div>
                 <h3 className="font-display text-lg font-bold text-ink">Dealership Desks & Tools</h3>

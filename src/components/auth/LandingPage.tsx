@@ -192,17 +192,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLoginSuccess }) => {
                           setPin('');
                           setError(null);
                         }}
-                        className={`p-2 sm:p-2.5 rounded-control border text-left transition-all ${
+                        className={`p-2 sm:p-2.5 rounded-control border text-left transition-all min-h-[46px] ${
                           isSelected
                             ? 'border-cobalt bg-cobalt-tint/30 ring-1 ring-cobalt'
                             : 'border-line bg-paper hover:bg-wash'
                         }`}
                       >
-                        <div className="flex items-center gap-1.5 sm:gap-2">
+                        <div className="flex items-center gap-2">
                           <img
                             src={p.avatarUrl}
                             alt={p.fullName}
-                            className="size-6.5 sm:size-7 rounded-full object-cover border border-line shrink-0"
+                            className="w-8 h-8 rounded-full object-cover border border-line shrink-0"
                           />
                           <div className="min-w-0 flex-1">
                             <p className="text-[11.5px] sm:text-xs font-bold text-ink truncate">{p.fullName}</p>

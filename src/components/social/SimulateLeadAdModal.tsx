@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import type { SocialLead } from '../../types/socialIntake';
 import { X, Sparkles, Send } from 'lucide-react';
+import { useBodyScrollLock } from '../../hooks/useBodyScrollLock';
 
 interface SimulateLeadAdModalProps {
   isOpen: boolean;
@@ -15,6 +16,7 @@ const PRESETS = [
 ];
 
 export const SimulateLeadAdModal: React.FC<SimulateLeadAdModalProps> = ({ isOpen, onClose, onSimulate }) => {
+  useBodyScrollLock(isOpen);
   const [customerName, setCustomerName] = useState('Miguel Hernandez');
   const [customerPhone, setCustomerPhone] = useState('+63 917 444 8899');
   const [modelInterest, setModelInterest] = useState('Toyota Fortuner 2.8 LTD');
@@ -40,8 +42,8 @@ export const SimulateLeadAdModal: React.FC<SimulateLeadAdModalProps> = ({ isOpen
   };
 
   return (
-    <div className="fixed inset-0 m-0 z-50 flex items-center justify-center p-4 bg-ink/50 backdrop-blur-sm animate-fade-in">
-      <div className="bg-card border border-line rounded-card shadow-xl max-w-md w-full overflow-hidden">
+    <div className="fixed inset-0 m-0 z-50 flex items-center justify-center p-3 sm:p-4 pt-[max(1rem,env(safe-area-inset-top,0px))] pb-[max(1rem,env(safe-area-inset-bottom,0px))] bg-ink/50 backdrop-blur-sm animate-fade-in overscroll-none touch-none">
+      <div className="bg-card border border-line rounded-card shadow-xl max-w-md w-full overflow-hidden flex flex-col max-h-[90dvh] touch-auto">
         <div className="flex items-center justify-between p-4 border-b border-line bg-paper">
           <div className="flex items-center gap-2">
             <div className="p-1.5 rounded-control bg-cobalt-tint text-cobalt"><Sparkles className="size-4" /></div>

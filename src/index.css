@@ -81,4 +81,11 @@ html {
   .safe-bottom-bar {
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
+
+  .modal-scroll-container {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+    touch-action: pan-y;
+  }
 }

@@ -12,6 +12,7 @@ import {
   AlertTriangle,
   Lock,
 } from 'lucide-react';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 
 interface AllocateVehicleModalProps {
   isOpen: boolean;
@@ -26,6 +27,7 @@ export const AllocateVehicleModal: React.FC<AllocateVehicleModalProps> = ({
   onClose,
   onAllocated,
 }) => {
+  useBodyScrollLock(isOpen);
   const [showAllModels, setShowAllModels] = useState(false);
   const [selectedVehicleId, setSelectedVehicleId] = useState<string>('');
   const [depositAmount, setDepositAmount] = useState<number>(20_000);
@@ -74,8 +76,8 @@ export const AllocateVehicleModal: React.FC<AllocateVehicleModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 m-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-ink/50 backdrop-blur-sm animate-fade-in">
-      <div className="bg-card border border-line rounded-card max-w-xl w-full p-4 sm:p-6 shadow-xl space-y-4 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 m-0 z-50 flex items-center justify-center p-3 sm:p-4 pt-[max(1rem,env(safe-area-inset-top,0px))] pb-[max(1rem,env(safe-area-inset-bottom,0px))] bg-ink/50 backdrop-blur-sm animate-fade-in overscroll-none touch-none">
+      <div className="bg-card border border-line rounded-card max-w-xl w-full p-4 sm:p-6 shadow-xl space-y-4 max-h-[90dvh] modal-scroll-container touch-auto">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-line pb-3">
           <div className="flex items-center gap-2.5">
