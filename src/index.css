@@ -63,6 +63,22 @@ html {
   }
 
   .safe-bottom {
-    padding-bottom: env(safe-area-inset-bottom, 16px);
+    padding-bottom: max(16px, env(safe-area-inset-bottom, 16px));
+  }
+
+  .pt-safe {
+    padding-top: max(1rem, env(safe-area-inset-top, 0px));
+  }
+
+  .pb-safe {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+  }
+
+  .safe-top-bar {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+
+  .safe-bottom-bar {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 }

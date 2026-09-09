@@ -28,22 +28,12 @@ import { DeliveryBayView } from './components/DeliveryBayView';
 import { CommissionsView } from './components/CommissionsView';
 import { SocialIntakeView } from './components/SocialIntakeView';
 import { TopNav } from './components/navigation/TopNav';
+import { MobileBottomNav } from './components/navigation/MobileBottomNav';
 import { PwaInstallPrompt } from './components/pwa/PwaInstallPrompt';
 import type { ViewMode } from './components/navigation/navItems';
 import {
   Plus,
-  Kanban,
-  CalendarCheck,
-  BarChart3,
-  LayoutGrid,
   Download,
-  Users,
-  Boxes,
-  Building2,
-  Wrench,
-  Truck,
-  Wallet,
-  Globe,
   LogOut,
 } from 'lucide-react';
 
@@ -236,7 +226,7 @@ function AppContent() {
 
   return (
     <div className="min-h-screen bg-paper text-ink font-sans">
-      <div className="p-4 sm:p-6 pb-24 md:pb-8 max-w-7xl mx-auto space-y-6">
+      <div className="px-4 sm:px-6 pt-[max(1rem,env(safe-area-inset-top,0px))] pb-[max(6rem,calc(env(safe-area-inset-bottom,0px)+5.5rem))] md:pb-8 max-w-7xl mx-auto space-y-5 sm:space-y-6">
         {/* Dealership Header */}
         <header className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-6 border-b border-line pb-4">
         <div className="flex items-center gap-3 shrink-0">
@@ -480,134 +470,18 @@ function AppContent() {
         type="button"
         onClick={() => setIsAddLeadOpen(true)}
         aria-label="Add new lead"
-        className="md:hidden fixed bottom-20 right-4 size-14 rounded-full bg-cobalt hover:bg-cobalt-press text-white shadow-xl flex items-center justify-center z-30 transition-transform active:scale-95 focus-visible:ring-2 focus-visible:ring-cobalt focus-visible:outline-none"
+        className="md:hidden fixed bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] right-4 size-14 rounded-full bg-cobalt hover:bg-cobalt-press text-white shadow-xl flex items-center justify-center z-20 transition-transform active:scale-95 focus-visible:ring-2 focus-visible:ring-cobalt focus-visible:outline-none"
       >
         <Plus className="size-6" />
       </button>
 
       {/* Mobile Agent Chrome: Bottom Tab Navigation */}
-      <nav
-        aria-label="Mobile Navigation"
-        className="md:hidden fixed bottom-0 inset-x-0 bg-card border-t border-line z-30 flex items-center justify-around h-16 safe-bottom shadow-lg overflow-x-auto"
-      >
-        <button
-          type="button"
-          onClick={() => setCurrentView('pipeline')}
-          className={`flex-1 flex flex-col items-center justify-center py-1 transition-colors ${
-            currentView === 'pipeline' ? 'text-cobalt font-bold' : 'text-sub hover:text-ink'
-          }`}
-        >
-          <Kanban className="size-5" />
-          <span className="text-[10px] uppercase font-bold mt-1">Pipeline</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => setCurrentView('board')}
-          className={`flex-1 flex flex-col items-center justify-center py-1 transition-colors ${
-            currentView === 'board' ? 'text-cobalt font-bold' : 'text-sub hover:text-ink'
-          }`}
-        >
-          <LayoutGrid className="size-5" />
-          <span className="text-[10px] uppercase font-bold mt-1">Board</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => setCurrentView('follow_ups')}
-          className={`flex-1 flex flex-col items-center justify-center py-1 transition-colors relative ${
-            currentView === 'follow_ups' ? 'text-cobalt font-bold' : 'text-sub hover:text-ink'
-          }`}
-        >
-          <div className="relative">
-            <CalendarCheck className="size-5" />
-            {kpis.overdueFollowUpsCount > 0 && (
-              <span className="absolute -top-1 -right-1 size-2 rounded-full bg-overdue ring-2 ring-card" />
-            )}
-          </div>
-          <span className="text-[10px] uppercase font-bold mt-1">Follow-ups</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => setCurrentView('floor')}
-          className={`flex-1 flex flex-col items-center justify-center py-1 transition-colors ${
-            currentView === 'floor' ? 'text-cobalt font-bold' : 'text-sub hover:text-ink'
-          }`}
-        >
-          <Users className="size-5" />
-          <span className="text-[10px] uppercase font-bold mt-1">Floor</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => setCurrentView('inventory')}
-          className={`flex-1 flex flex-col items-center justify-center py-1 transition-colors ${
-            currentView === 'inventory' ? 'text-cobalt font-bold' : 'text-sub hover:text-ink'
-          }`}
-        >
-          <Boxes className="size-5" />
-          <span className="text-[10px] uppercase font-bold mt-1">Stock</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => setCurrentView('fi_desk')}
-          className={`flex-1 flex flex-col items-center justify-center py-1 transition-colors min-w-[54px] ${
-            currentView === 'fi_desk' ? 'text-cobalt font-bold' : 'text-sub hover:text-ink'
-          }`}
-        >
-          <Building2 className="size-5" />
-          <span className="text-[10px] uppercase font-bold mt-1">F&amp;I</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => setCurrentView('service_drive')}
-          className={`flex-1 flex flex-col items-center justify-center py-1 transition-colors min-w-[54px] ${
-            currentView === 'service_drive' ? 'text-cobalt font-bold' : 'text-sub hover:text-ink'
-          }`}
-        >
-          <Wrench className="size-5" />
-          <span className="text-[10px] uppercase font-bold mt-1">Service</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => setCurrentView('delivery')}
-          className={`flex-1 flex flex-col items-center justify-center py-1 transition-colors min-w-[54px] ${
-            currentView === 'delivery' ? 'text-cobalt font-bold' : 'text-sub hover:text-ink'
-          }`}
-        >
-          <Truck className="size-5" />
-          <span className="text-[10px] uppercase font-bold mt-1">Delivery</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => setCurrentView('commissions')}
-          className={`flex-1 flex flex-col items-center justify-center py-1 transition-colors min-w-[54px] ${
-            currentView === 'commissions' ? 'text-cobalt font-bold' : 'text-sub hover:text-ink'
-          }`}
-        >
-          <Wallet className="size-5" />
-          <span className="text-[10px] uppercase font-bold mt-1">Earn</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => setCurrentView('social_intake')}
-          className={`flex-1 flex flex-col items-center justify-center py-1 transition-colors min-w-[54px] ${
-            currentView === 'social_intake' ? 'text-cobalt font-bold' : 'text-sub hover:text-ink'
-          }`}
-        >
-          <Globe className="size-5" />
-          <span className="text-[10px] uppercase font-bold mt-1">Social</span>
-        </button>
-        {currentProfile.role !== 'agent' && (
-          <button
-            type="button"
-            onClick={() => setCurrentView('analytics')}
-            className={`flex-1 flex flex-col items-center justify-center py-1 transition-colors min-w-[54px] ${
-              currentView === 'analytics' ? 'text-cobalt font-bold' : 'text-sub hover:text-ink'
-            }`}
-          >
-            <BarChart3 className="size-5" />
-            <span className="text-[10px] uppercase font-bold mt-1">Analytics</span>
-          </button>
-        )}
-      </nav>
+      <MobileBottomNav
+        currentView={currentView}
+        onSelectView={setCurrentView}
+        overdueCount={kpis.overdueFollowUpsCount}
+        userRole={currentProfile.role}
+      />
 
       {matrixLead && (
         <MultiBankMatrixModal

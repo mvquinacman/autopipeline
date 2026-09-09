@@ -89,26 +89,26 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLoginSuccess }) => {
 
   return (
     <div className="min-h-screen bg-paper text-ink flex flex-col justify-between font-sans selection:bg-cobalt selection:text-white">
-      {/* Top Bar Header */}
-      <header className="border-b border-line bg-card/80 backdrop-blur-sm sticky top-0 z-30 px-4 sm:px-8 py-3.5 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="size-10 rounded-control bg-cobalt text-white flex items-center justify-center font-display font-bold text-xl tracking-wider shadow-sm">
+      {/* Top Bar Header with iOS Status Bar / Notch Safe Area */}
+      <header className="border-b border-line bg-card/95 backdrop-blur-sm sticky top-0 z-30 px-4 sm:px-8 pt-[max(0.875rem,env(safe-area-inset-top,0px))] pb-3.5 flex items-center justify-between">
+        <div className="flex items-center gap-2.5 sm:gap-3">
+          <div className="size-9 sm:size-10 rounded-control bg-cobalt text-white flex items-center justify-center font-display font-bold text-lg sm:text-xl tracking-wider shadow-sm shrink-0">
             AP
           </div>
           <div>
-            <h1 className="font-display text-xl font-bold tracking-tight text-ink flex items-center gap-2">
+            <h1 className="font-display text-lg sm:text-xl font-bold tracking-tight text-ink flex items-center gap-1.5 sm:gap-2">
               AutoPipeline
               <span className="hidden sm:inline text-[11px] font-mono uppercase bg-wash text-sub px-2 py-0.5 rounded border border-line">
                 v2.5 OS
               </span>
             </h1>
-            <p className="text-xs text-sub font-medium">Metro Manila Motors — BGC Showroom</p>
+            <p className="text-[11px] sm:text-xs text-sub font-medium truncate max-w-[200px] sm:max-w-none">Metro Manila Motors — BGC Showroom</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-won bg-won/10 px-2.5 py-1 rounded-full border border-won/20">
-            <span className="size-2 rounded-full bg-won animate-pulse" />
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="inline-flex items-center gap-1.5 text-[10.5px] sm:text-[11px] font-semibold text-won bg-won/10 px-2 sm:px-2.5 py-1 rounded-full border border-won/20">
+            <span className="size-2 rounded-full bg-won animate-pulse shrink-0" />
             <span className="hidden sm:inline">BGC Sales Cloud Online</span>
             <span className="sm:hidden">Online</span>
           </span>
@@ -116,12 +116,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLoginSuccess }) => {
       </header>
 
       {/* Main Landing / Auth Hero Container */}
-      <main className="max-w-5xl mx-auto w-full px-4 sm:px-6 py-8 sm:py-12 flex-1 flex flex-col justify-center">
-        <div className="text-center space-y-3 mb-8">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-cobalt bg-cobalt-tint px-3 py-1 rounded-full inline-block">
+      <main className="max-w-5xl mx-auto w-full px-4 sm:px-6 py-6 sm:py-12 flex-1 flex flex-col justify-center pb-[max(2rem,env(safe-area-inset-bottom,0px))]">
+        <div className="text-center space-y-2.5 sm:space-y-3 mb-6 sm:mb-8">
+          <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-cobalt bg-cobalt-tint px-2.5 sm:px-3 py-1 rounded-full inline-block">
             Showroom Floor Operations Terminal
           </span>
-          <h2 className="font-display text-3xl sm:text-5xl font-bold tracking-tight text-ink">
+          <h2 className="font-display text-2xl sm:text-5xl font-bold tracking-tight text-ink leading-tight">
             Automotive Dealership Sales Operating System
           </h2>
           <p className="text-xs sm:text-sm text-sub max-w-xl mx-auto">
@@ -131,7 +131,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLoginSuccess }) => {
         </div>
 
         {/* Authentication Card */}
-        <div className="max-w-lg mx-auto w-full bg-card border border-line rounded-card shadow-xl p-5 sm:p-7 space-y-5">
+        <div className="max-w-lg mx-auto w-full bg-card border border-line rounded-card shadow-xl p-4 sm:p-7 space-y-4 sm:space-y-5">
           {/* Tab Switcher */}
           <div className="grid grid-cols-2 gap-1.5 p-1 bg-wash border border-line rounded-control">
             <button
@@ -140,13 +140,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLoginSuccess }) => {
                 setAuthMode('pin');
                 setError(null);
               }}
-              className={`py-2 text-xs font-bold rounded-control transition-all flex items-center justify-center gap-1.5 ${
+              className={`py-2 px-1.5 sm:px-2.5 text-[11px] sm:text-xs font-bold rounded-control transition-all flex items-center justify-center gap-1.5 sm:gap-2 whitespace-nowrap ${
                 authMode === 'pin'
                   ? 'bg-card text-cobalt shadow-sm border border-line'
                   : 'text-sub hover:text-ink'
               }`}
             >
-              <KeyRound className="size-3.5" /> Showroom PIN Terminal
+              <KeyRound className="size-3.5 shrink-0" />
+              <span>Showroom PIN Terminal</span>
             </button>
             <button
               type="button"
@@ -154,13 +155,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLoginSuccess }) => {
                 setAuthMode('corporate');
                 setError(null);
               }}
-              className={`py-2 text-xs font-bold rounded-control transition-all flex items-center justify-center gap-1.5 ${
+              className={`py-2 px-1.5 sm:px-2.5 text-[11px] sm:text-xs font-bold rounded-control transition-all flex items-center justify-center gap-1.5 sm:gap-2 whitespace-nowrap ${
                 authMode === 'corporate'
                   ? 'bg-card text-cobalt shadow-sm border border-line'
                   : 'text-sub hover:text-ink'
               }`}
             >
-              <Mail className="size-3.5" /> Corporate Login
+              <Mail className="size-3.5 shrink-0" />
+              <span>Corporate Login</span>
             </button>
           </div>
 
@@ -190,21 +192,21 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onLoginSuccess }) => {
                           setPin('');
                           setError(null);
                         }}
-                        className={`p-2.5 rounded-control border text-left transition-all ${
+                        className={`p-2 sm:p-2.5 rounded-control border text-left transition-all ${
                           isSelected
                             ? 'border-cobalt bg-cobalt-tint/30 ring-1 ring-cobalt'
                             : 'border-line bg-paper hover:bg-wash'
                         }`}
                       >
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1.5 sm:gap-2">
                           <img
                             src={p.avatarUrl}
                             alt={p.fullName}
-                            className="size-7 rounded-full object-cover border border-line shrink-0"
+                            className="size-6.5 sm:size-7 rounded-full object-cover border border-line shrink-0"
                           />
-                          <div className="truncate">
-                            <p className="text-xs font-bold text-ink truncate">{p.fullName}</p>
-                            <span className="text-[10px] text-sub uppercase font-semibold block">
+                          <div className="min-w-0 flex-1">
+                            <p className="text-[11.5px] sm:text-xs font-bold text-ink truncate">{p.fullName}</p>
+                            <span className="text-[9.5px] sm:text-[10px] text-sub uppercase font-semibold block truncate">
                               {p.role.replace('_', ' ')}
                             </span>
                           </div>

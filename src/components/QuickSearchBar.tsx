@@ -62,7 +62,7 @@ export function QuickSearchBar({ leads, onSelectLead }: QuickSearchBarProps) {
             setIsOpen(true);
           }}
           placeholder="Search customer, phone, model..."
-          className="w-full h-9 pl-9 pr-12 rounded-control border border-line bg-card text-xs text-ink placeholder:text-sub focus:border-cobalt focus:outline-none transition-all shadow-sm"
+          className="w-full h-9 pl-9 pr-8 sm:pr-12 rounded-control border border-line bg-card text-xs text-ink placeholder:text-sub focus:border-cobalt focus:outline-none transition-all shadow-sm"
         />
         {query ? (
           <button
@@ -76,7 +76,7 @@ export function QuickSearchBar({ leads, onSelectLead }: QuickSearchBarProps) {
             <X className="size-3.5" />
           </button>
         ) : (
-          <kbd className="absolute right-2.5 px-1.5 py-0.5 text-[9px] font-semibold text-sub bg-wash border border-line rounded">
+          <kbd className="hidden sm:inline-block absolute right-2.5 px-1.5 py-0.5 text-[9px] font-semibold text-sub bg-wash border border-line rounded">
             Ctrl K
           </kbd>
         )}
