@@ -77,6 +77,30 @@ describe('LeadFilterSortStrip Component', () => {
     expect(handleSelectSort).toHaveBeenCalledWith('value_desc');
   });
 
+  it('opens custom sort menu on click and selects an option', () => {
+    const handleSelectSort = vi.fn();
+    render(
+      <LeadFilterSortStrip
+        activeFilter="all"
+        onSelectFilter={vi.fn()}
+        activeSort="default"
+        onSelectSort={handleSelectSort}
+        totalCount={14}
+        filteredCount={14}
+        onReset={vi.fn()}
+      />
+    );
+
+    const triggerButton = screen.getByRole('button', { name: /Sort leads: Default Order/i });
+    fireEvent.click(triggerButton);
+
+    const option = screen.getByRole('menuitem', { name: /Value: High to Low/i });
+    expect(option).toBeInTheDocument();
+    fireEvent.click(option);
+
+    expect(handleSelectSort).toHaveBeenCalledWith('value_desc');
+  });
+
   it('shows Reset button when filter is active and calls onReset on click', () => {
     const handleReset = vi.fn();
     render(

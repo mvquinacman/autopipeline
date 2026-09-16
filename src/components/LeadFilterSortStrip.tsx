@@ -1,5 +1,6 @@
 import React from 'react';
-import { AlertCircle, Flame, Car, Building2, ArrowUpDown, X, ChevronDown, Clock, Calendar, Archive } from 'lucide-react';
+import { AlertCircle, Flame, Car, Building2, X, Clock, Calendar, Archive } from 'lucide-react';
+import { SortDropdown, SORT_OPTIONS } from './SortDropdown';
 
 export type LeadFilter =
   | 'all'
@@ -33,14 +34,7 @@ const FILTER_CHIPS: { id: LeadFilter; label: string; icon?: React.ElementType }[
   { id: 'financing', label: 'In Financing', icon: Building2 },
 ];
 
-const SORT_OPTIONS: { id: LeadSort; label: string }[] = [
-  { id: 'default', label: 'Default Order' },
-  { id: 'urgency', label: 'Urgency' },
-  { id: 'value_desc', label: 'Value: High to Low' },
-  { id: 'value_asc', label: 'Value: Low to High' },
-  { id: 'name_asc', label: 'Customer Name (A-Z)' },
-  { id: 'updated_desc', label: 'Recently Updated' },
-];
+export { SORT_OPTIONS };
 
 export const LeadFilterSortStrip: React.FC<LeadFilterSortStripProps> = ({
   activeFilter,
@@ -54,9 +48,9 @@ export const LeadFilterSortStrip: React.FC<LeadFilterSortStripProps> = ({
   const isFiltered = activeFilter !== 'all' || activeSort !== 'default';
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pt-1 pb-1">
-      {/* Quick Filter Chips */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none" role="group" aria-label="Lead Quick Filters">
+    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2.5 pt-1 pb-1">
+      {/* Quick Filter Chips (flex-wrap eliminates horizontal scrolling) */}
+      <div className="flex flex-wrap items-center gap-1.5 scrollbar-none" role="group" aria-label="Lead Quick Filters">
         {FILTER_CHIPS.map(({ id, label, icon: Icon }) => {
           const isActive = activeFilter === id;
           return (
@@ -78,7 +72,7 @@ export const LeadFilterSortStrip: React.FC<LeadFilterSortStripProps> = ({
       </div>
 
       {/* Sort Selector & Results Count */}
-      <div className="flex items-center justify-between sm:justify-end gap-2.5 shrink-0">
+      <div className="flex items-center justify-between md:justify-end gap-2.5 shrink-0">
         <div className="flex items-center gap-1 text-xs text-sub font-medium">
           <span>Showing</span>
           <span className="font-bold text-ink tabular-nums">{filteredCount}</span>
@@ -96,23 +90,7 @@ export const LeadFilterSortStrip: React.FC<LeadFilterSortStripProps> = ({
           )}
         </div>
 
-        <div className="relative flex items-center gap-1.5 bg-card border border-line rounded-control pl-2 pr-6 py-1 shadow-xs">
-          <ArrowUpDown className="size-3 text-sub shrink-0" />
-          <label htmlFor="lead-sort-select" className="sr-only">Sort leads by</label>
-          <select
-            id="lead-sort-select"
-            value={activeSort}
-            onChange={(e) => onSelectSort(e.target.value as LeadSort)}
-            className="text-xs font-semibold bg-transparent text-ink border-none focus:outline-none cursor-pointer appearance-none pr-1"
-          >
-            {SORT_OPTIONS.map((opt) => (
-              <option key={opt.id} value={opt.id} className="bg-card text-ink">
-                {opt.label}
-              </option>
-            ))}
-          </select>
-          <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 size-3 text-sub pointer-events-none" />
-        </div>
+        <SortDropdown activeSort={activeSort} onSelectSort={onSelectSort} />
       </div>
     </div>
   );
