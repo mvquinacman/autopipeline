@@ -82,12 +82,18 @@ export const serviceDriveService = {
       input.assignedAgentName
     );
 
-    // Advance lead from 'new' to 'contacted' since conversation happened in service drive
-    const contactedLead = await leadService.advanceStage(
+    // Set lead stage directly to 'contacted' since conversation happened in service drive
+    const contactedLead = await leadService.updateLead(newLead.id, {
+      stage: 'contacted',
+      probability: 25,
+      lastActivity: 'Initiated equity upgrade consultation at Service Drive',
+    });
+    await leadService.addActivity(
       newLead.id,
-      'Initiated equity upgrade consultation at Service Drive',
       input.assignedAgentId,
-      input.assignedAgentName
+      input.assignedAgentName,
+      'stage_change',
+      'Advanced stage to contacted - Initiated equity upgrade consultation at Service Drive'
     );
 
     // 2. Automatically register pre-appraised trade-in

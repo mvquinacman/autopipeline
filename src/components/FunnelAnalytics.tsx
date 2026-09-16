@@ -1,14 +1,21 @@
 import { useMemo } from 'react';
-import type { Lead } from '../types/crm';
+import type { Lead, Profile } from '../types/crm';
 import { analyticsService } from '../services/analyticsService';
-import { formatPeso } from '../data/seed';
+import { formatPeso, SEED_PROFILES } from '../data/seed';
 import { TrendingUp, AlertTriangle, ShieldCheck, Car } from 'lucide-react';
+import { ManagerFollowUpMatrix } from './ManagerFollowUpMatrix';
 
 interface FunnelAnalyticsProps {
   leads: Lead[];
+  profiles?: Profile[];
+  onSelectLead?: (lead: Lead) => void;
 }
 
-export function FunnelAnalytics({ leads }: FunnelAnalyticsProps) {
+export function FunnelAnalytics({
+  leads,
+  profiles = SEED_PROFILES,
+  onSelectLead = () => {},
+}: FunnelAnalyticsProps) {
   const summary = useMemo(
     () => analyticsService.calculateFunnelAnalytics(leads),
     [leads]
@@ -16,6 +23,13 @@ export function FunnelAnalytics({ leads }: FunnelAnalyticsProps) {
 
   return (
     <div className="space-y-6">
+      {/* Priority #6 Manager Follow-Up Matrix */}
+      <ManagerFollowUpMatrix
+        leads={leads}
+        profiles={profiles}
+        onSelectLead={onSelectLead}
+      />
+
       {/* Overview Metric Row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="bg-card border border-line rounded-card p-3.5 space-y-1">

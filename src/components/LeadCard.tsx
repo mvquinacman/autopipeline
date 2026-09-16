@@ -1,5 +1,5 @@
-import { ChevronRight } from 'lucide-react';
-import { formatPeso, STAGES } from '../data/seed';
+import { ChevronRight, ArrowRight } from 'lucide-react';
+import { formatPeso, getStageConfig } from '../data/seed';
 import type { Lead } from '../types/crm';
 import { StatusPill } from './StatusPill';
 
@@ -10,7 +10,7 @@ interface LeadCardProps {
 }
 
 export function LeadCard({ lead, onAdvanceStage, onSelectLead }: LeadCardProps) {
-  const stageConfig = STAGES.find((s) => s.id === lead.stage);
+  const stageConfig = getStageConfig(lead.stage);
   const isFinalStage = lead.stage === 'released' || lead.status !== 'active';
 
   const pillStatus =
@@ -18,6 +18,8 @@ export function LeadCard({ lead, onAdvanceStage, onSelectLead }: LeadCardProps) 
       ? 'won'
       : lead.status === 'lost'
       ? 'lost'
+      : lead.status === 'nurture'
+      ? 'nurture'
       : lead.urgency !== 'none'
       ? lead.urgency
       : 'active';
@@ -42,6 +44,12 @@ export function LeadCard({ lead, onAdvanceStage, onSelectLead }: LeadCardProps) 
             {formatPeso(lead.estValue)}
           </span>
         </div>
+        {lead.nextAction && (
+          <p className="text-[11px] text-cobalt flex items-center gap-1 mt-1.5 truncate">
+            <ArrowRight className="size-3 shrink-0" />
+            <span className="truncate">Next: {lead.nextAction}</span>
+          </p>
+        )}
       </div>
 
       <div className="pt-2 border-t border-line flex items-center justify-between gap-2">

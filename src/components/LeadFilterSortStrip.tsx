@@ -1,7 +1,15 @@
 import React from 'react';
-import { AlertCircle, Flame, Car, Building2, ArrowUpDown, X, ChevronDown } from 'lucide-react';
+import { AlertCircle, Flame, Car, Building2, ArrowUpDown, X, ChevronDown, Clock, Calendar, Archive } from 'lucide-react';
 
-export type LeadFilter = 'all' | 'overdue' | 'high_value' | 'test_drive' | 'financing';
+export type LeadFilter =
+  | 'all'
+  | 'not_contacted'
+  | 'due_today'
+  | 'overdue'
+  | 'nurture'
+  | 'high_value'
+  | 'test_drive'
+  | 'financing';
 export type LeadSort = 'default' | 'urgency' | 'value_desc' | 'value_asc' | 'name_asc' | 'updated_desc';
 
 interface LeadFilterSortStripProps {
@@ -16,7 +24,10 @@ interface LeadFilterSortStripProps {
 
 const FILTER_CHIPS: { id: LeadFilter; label: string; icon?: React.ElementType }[] = [
   { id: 'all', label: 'All Leads' },
+  { id: 'not_contacted', label: 'Pending Outreach', icon: Clock },
+  { id: 'due_today', label: 'Due Today', icon: Calendar },
   { id: 'overdue', label: 'Overdue Tasks', icon: AlertCircle },
+  { id: 'nurture', label: 'Nurture / Old Leads', icon: Archive },
   { id: 'high_value', label: 'High Value (≥₱2M)', icon: Flame },
   { id: 'test_drive', label: 'Test Drive', icon: Car },
   { id: 'financing', label: 'In Financing', icon: Building2 },

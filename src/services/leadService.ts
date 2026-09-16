@@ -266,6 +266,13 @@ export const leadService = {
         lostReason: validated.lostReason || 'other',
         updatedAt: new Date().toISOString(),
       };
+    } else if (validated.action === 'nurture') {
+      actionDetail = `Moved to Nurture / Old Leads pool after 3 unanswered attempts`;
+      updatedLead = {
+        ...currentLead,
+        status: 'nurture',
+        updatedAt: new Date().toISOString(),
+      };
     }
 
     if (validated.note) {
@@ -365,6 +372,170 @@ export const leadService = {
   },
 
   /**
+   * Log contact attempt (Attempt #1 -> #2 -> #3 -> Nurture)
+   */
+  async recordContactAttempt(
+    leadId: string,
+    channel: 'call' | 'sms' | 'viber',
+    outcome: string,
+    actorId = 'user-agent-1',
+    actorName = 'Paolo Morales'
+  ): Promise<Lead> {
+    const leadIndex = inMemoryLeads.findIndex((l) => l.id === leadId);
+    if (leadIndex === -1) throw new Error(`Lead ${leadId} not found`);
+
+    const currentLead = inMemoryLeads[leadIndex];
+    const newAttemptCount = (currentLead.contactAttempts || 0) + 1;
+    const detail = `Attempt #${newAttemptCount} via ${channel.toUpperCase()}: ${outcome}`;
+
+    const updated: Lead = {
+      ...currentLead,
+      contactAttempts: newAttemptCount,
+      lastActivity: detail,
+      stage: currentLead.stage === 'new' ? 'attempting_contact' : currentLead.stage,
+      updatedAt: new Date().toISOString(),
+    };
+
+    inMemoryLeads[leadIndex] = updated;
+    await this.addActivity(leadId, actorId, actorName, channel === 'viber' ? 'viber' : 'call', detail);
+    return updated;
+  },
+
+  /**
+   * Schedules next action and due date (Priority #3)
+   */
+  async scheduleNextAction(
+    leadId: string,
+    nextAction: string,
+    dueDate: string,
+    actorId = 'user-agent-1',
+    actorName = 'Paolo Morales'
+  ): Promise<Lead> {
+    const leadIndex = inMemoryLeads.findIndex((l) => l.id === leadId);
+    if (leadIndex === -1) throw new Error(`Lead ${leadId} not found`);
+
+    const currentLead = inMemoryLeads[leadIndex];
+    const todayStr = new Date().toISOString().split('T')[0];
+    const isDueToday = dueDate === todayStr;
+    const isOverdue = dueDate < todayStr;
+    const urgency = isOverdue ? 'overdue' : isDueToday ? 'due_today' : 'upcoming';
+
+    const updated: Lead = {
+      ...currentLead,
+      nextAction,
+      nextFollowUpDate: dueDate,
+      followUpDue: dueDate,
+      urgency,
+      updatedAt: new Date().toISOString(),
+    };
+
+    inMemoryLeads[leadIndex] = updated;
+    await this.addActivity(
+      leadId,
+      actorId,
+      actorName,
+      'note',
+      `Scheduled Next Action: "${nextAction}" (Due: ${dueDate})`
+    );
+    return updated;
+  },
+
+  /**
+   * Reactivates lead from Nurture / Old Leads pool
+   */
+  async reactivateLead(
+    leadId: string,
+    actorId = 'user-agent-1',
+    actorName = 'Paolo Morales'
+  ): Promise<Lead> {
+    const leadIndex = inMemoryLeads.findIndex((l) => l.id === leadId);
+    if (leadIndex === -1) throw new Error(`Lead ${leadId} not found`);
+
+    const currentLead = inMemoryLeads[leadIndex];
+    const updated: Lead = {
+      ...currentLead,
+      status: 'active',
+      contactAttempts: 0,
+      updatedAt: new Date().toISOString(),
+    };
+
+    inMemoryLeads[leadIndex] = updated;
+    await this.addActivity(
+      leadId,
+      actorId,
+      actorName,
+      'note',
+      'Reactivated lead from Nurture pool to active pipeline'
+    );
+    return updated;
+  },
+
+  /**
+   * Toggle showroom visit or test drive milestones (Priority #2)
+   */
+  async toggleMilestone(
+    leadId: string,
+    milestone: 'showroomVisited' | 'testDriveCompleted',
+    value: boolean,
+    actorId = 'user-agent-1',
+    actorName = 'Paolo Morales'
+  ): Promise<Lead> {
+    const leadIndex = inMemoryLeads.findIndex((l) => l.id === leadId);
+    if (leadIndex === -1) throw new Error(`Lead ${leadId} not found`);
+
+    const currentLead = inMemoryLeads[leadIndex];
+    const updatedMilestones = {
+      ...currentLead.milestones,
+      [milestone]: value,
+    };
+
+    const label = milestone === 'showroomVisited' ? 'Showroom Visit' : 'Test Drive';
+    const detail = value ? `Milestone reached: ${label}` : `Cleared milestone: ${label}`;
+
+    const updated: Lead = {
+      ...currentLead,
+      milestones: updatedMilestones,
+      updatedAt: new Date().toISOString(),
+    };
+
+    inMemoryLeads[leadIndex] = updated;
+    await this.addActivity(leadId, actorId, actorName, 'milestone', detail);
+    return updated;
+  },
+
+  /**
+   * Update transaction path (Cash vs Financing)
+   */
+  async updateTransactionPath(
+    leadId: string,
+    transactionType: 'cash' | 'financing',
+    processingStatus?: Lead['processingStatus'],
+    actorId = 'user-agent-1',
+    actorName = 'Paolo Morales'
+  ): Promise<Lead> {
+    const leadIndex = inMemoryLeads.findIndex((l) => l.id === leadId);
+    if (leadIndex === -1) throw new Error(`Lead ${leadId} not found`);
+
+    const currentLead = inMemoryLeads[leadIndex];
+    const updated: Lead = {
+      ...currentLead,
+      transactionType,
+      processingStatus: processingStatus || currentLead.processingStatus,
+      updatedAt: new Date().toISOString(),
+    };
+
+    inMemoryLeads[leadIndex] = updated;
+    await this.addActivity(
+      leadId,
+      actorId,
+      actorName,
+      'note',
+      `Transaction route set to: ${transactionType.toUpperCase()}${processingStatus ? ` (${processingStatus})` : ''}`
+    );
+    return updated;
+  },
+
+  /**
    * Updates arbitrary fields on a lead (e.g. vehicle allocation, trade-in, etc.)
    */
   async updateLead(
@@ -412,7 +583,11 @@ export const leadService = {
       estValue: validated.estValue,
       probability: 10,
       notes: validated.notes,
-      urgency: 'none',
+      contactAttempts: 0,
+      nextAction: validated.nextAction || 'Initial contact & vehicle qualification',
+      nextFollowUpDate: validated.nextFollowUpDate || new Date(Date.now() + 86400000).toISOString().split('T')[0],
+      followUpDue: validated.nextFollowUpDate || new Date(Date.now() + 86400000).toISOString().split('T')[0],
+      urgency: 'due_today',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -433,12 +608,23 @@ export const leadService = {
 
     inMemoryLeads = [newLead, ...inMemoryLeads];
 
+    // Also register scheduled follow-up
+    const initialFollowUp: FollowUp = {
+      id: crypto.randomUUID(),
+      leadId: newLead.id,
+      agentId,
+      dueDate: `${newLead.nextFollowUpDate}T10:00:00Z`,
+      status: 'pending',
+      note: newLead.nextAction || 'Initial follow-up',
+    };
+    inMemoryFollowUps = [initialFollowUp, ...inMemoryFollowUps];
+
     await this.addActivity(
       newLead.id,
       agentId,
       agentName,
       'note',
-      `Lead created via ${newLead.source} for ${newLead.modelInterest}`
+      `Lead created via ${newLead.source} for ${newLead.modelInterest}. Scheduled next action: "${newLead.nextAction}".`
     );
 
     return newLead;

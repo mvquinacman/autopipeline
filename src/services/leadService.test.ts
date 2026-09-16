@@ -18,9 +18,9 @@ describe('LeadService Operations & State Machine', () => {
 
     if (newLead) {
       const initialProb = newLead.probability;
-      const updated = await leadService.advanceStage(newLead.id, 'Customer scheduled showroom visit');
+      const updated = await leadService.advanceStage(newLead.id, 'Initiating customer outreach');
 
-      expect(updated.stage).toBe('contacted');
+      expect(updated.stage).toBe('attempting_contact');
       expect(updated.probability).toBeGreaterThan(initialProb);
 
       // Verify audit activity was logged automatically
@@ -32,17 +32,17 @@ describe('LeadService Operations & State Machine', () => {
 
   it('regresses a lead stage backward upon request', async () => {
     const leads = await leadService.getLeads();
-    const showroomLead = leads.find((l) => l.stage === 'showroom');
-    expect(showroomLead).toBeDefined();
+    const contactedLead = leads.find((l) => l.stage === 'contacted');
+    expect(contactedLead).toBeDefined();
 
-    if (showroomLead) {
+    if (contactedLead) {
       const updated = await leadService.transitionLead({
-        leadId: showroomLead.id,
+        leadId: contactedLead.id,
         action: 'regress',
         note: 'Customer wants to revisit brochure specs first',
       });
 
-      expect(updated.stage).toBe('contacted');
+      expect(updated.stage).toBe('attempting_contact');
     }
   });
 

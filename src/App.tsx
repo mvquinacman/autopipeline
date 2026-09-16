@@ -76,13 +76,22 @@ function AppContent() {
       list = list.filter((l) => l.stage === selectedStage);
     }
     if (activeFilter === 'overdue') {
-      list = list.filter((l) => l.urgency === 'overdue');
+      list = list.filter((l) => l.urgency === 'overdue' && l.status !== 'nurture');
+    } else if (activeFilter === 'not_contacted') {
+      list = list.filter((l) => l.status === 'active' && ((l.contactAttempts ?? 0) === 0 || !l.lastActivity));
+    } else if (activeFilter === 'due_today') {
+      list = list.filter((l) => l.urgency === 'due_today' && l.status !== 'nurture');
+    } else if (activeFilter === 'nurture') {
+      list = list.filter((l) => l.status === 'nurture');
     } else if (activeFilter === 'high_value') {
       list = list.filter((l) => l.estValue >= 2_000_000);
     } else if (activeFilter === 'test_drive') {
-      list = list.filter((l) => l.stage === 'test_drive');
+      list = list.filter((l) => l.stage === 'test_drive' || l.milestones?.testDriveCompleted);
     } else if (activeFilter === 'financing') {
-      list = list.filter((l) => l.stage === 'application' || l.stage === 'approved');
+      list = list.filter((l) => l.stage === 'application' || l.stage === 'processing' || l.stage === 'approved');
+    } else if (activeFilter === 'all') {
+      // Show active leads, keep nurture separate
+      list = list.filter((l) => l.status !== 'nurture');
     }
 
     if (activeSort === 'default') {
@@ -449,7 +458,11 @@ function AppContent() {
         )}
 
         {currentView === 'analytics' && (
-          <FunnelAnalytics leads={scopedLeads} />
+          <FunnelAnalytics
+            leads={scopedLeads}
+            profiles={profiles}
+            onSelectLead={(lead) => setSelectedLead(lead)}
+          />
         )}
       </div>
 

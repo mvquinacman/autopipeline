@@ -2,15 +2,19 @@ import { z } from 'zod';
 
 export const StageEnum = z.enum([
   'new',
+  'attempting_contact',
   'contacted',
+  'interested',
+  'quotation_sent',
+  'application',
+  'processing',
+  'released',
   'showroom',
   'test_drive',
-  'application',
   'approved',
-  'released',
 ]);
 
-export const LeadStatusEnum = z.enum(['active', 'won', 'lost']);
+export const LeadStatusEnum = z.enum(['active', 'won', 'lost', 'nurture']);
 
 export const LostReasonEnum = z.enum([
   'bought_elsewhere',
@@ -31,11 +35,14 @@ export const CreateLeadSchema = z.object({
   estValue: z.number().positive('Estimated deal value must be greater than zero'),
   source: z.string().default('walk_in'),
   notes: z.string().optional(),
+  nextAction: z.string().optional(),
+  nextFollowUpDate: z.string().optional(),
+  agentId: z.string().optional(),
 });
 
 export const TransitionLeadSchema = z.object({
   leadId: z.string().min(1, 'Lead ID is required'),
-  action: z.enum(['advance', 'regress', 'lost']),
+  action: z.enum(['advance', 'regress', 'lost', 'nurture']),
   lostReason: LostReasonEnum.optional(),
   note: z.string().optional(),
 });

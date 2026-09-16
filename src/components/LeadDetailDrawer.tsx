@@ -27,6 +27,7 @@ import { commissionService } from '../services/commissionService';
 import type { CommissionRecord } from '../types/commission';
 import { PermissionGate } from './auth/PermissionGate';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
+import { NextActionModal } from './NextActionModal';
 import {
   X,
   ChevronRight,
@@ -49,6 +50,7 @@ import {
   Truck,
   Receipt,
   ChevronDown,
+  Clock,
 } from 'lucide-react';
 
 interface LeadDetailDrawerProps {
@@ -81,6 +83,7 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
   const [showVsoModal, setShowVsoModal] = useState(false);
   const [showDeliveryModal, setShowDeliveryModal] = useState(false);
   const [showCommissionModal, setShowCommissionModal] = useState(false);
+  const [showNextActionModal, setShowNextActionModal] = useState(false);
   const [dealCommission, setDealCommission] = useState<CommissionRecord | null>(null);
   const [newNote, setNewNote] = useState('');
   const [isAddingNote, setIsAddingNote] = useState(false);
@@ -362,6 +365,94 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
     setActivities(refreshed);
   };
 
+  const handleSaveNextAction = async (nextAction: string, dueDate: string) => {
+    if (!lead) return;
+    const updated = await leadService.scheduleNextAction(
+      lead.id,
+      nextAction,
+      dueDate,
+      currentProfile.id,
+      currentProfile.fullName
+    );
+    onLeadUpdated(updated);
+    const refreshed = await leadService.getActivities(lead.id);
+    setActivities(refreshed);
+  };
+
+  const handleLogContactAttempt = async (channel: 'call' | 'sms' | 'viber', outcome: string) => {
+    if (!lead) return;
+    const updated = await leadService.recordContactAttempt(
+      lead.id,
+      channel,
+      outcome,
+      currentProfile.id,
+      currentProfile.fullName
+    );
+    onLeadUpdated(updated);
+    const refreshed = await leadService.getActivities(lead.id);
+    setActivities(refreshed);
+    setShowNextActionModal(true);
+  };
+
+  const handleMoveToNurture = async () => {
+    if (!lead) return;
+    const updated = await leadService.transitionLead(
+      {
+        leadId: lead.id,
+        action: 'nurture',
+        note: 'Lead moved to Nurture / Old Leads pool',
+      },
+      currentProfile.id,
+      currentProfile.fullName
+    );
+    onLeadUpdated(updated);
+    const refreshed = await leadService.getActivities(lead.id);
+    setActivities(refreshed);
+  };
+
+  const handleReactivateLead = async () => {
+    if (!lead) return;
+    const updated = await leadService.reactivateLead(
+      lead.id,
+      currentProfile.id,
+      currentProfile.fullName
+    );
+    onLeadUpdated(updated);
+    const refreshed = await leadService.getActivities(lead.id);
+    setActivities(refreshed);
+    setShowNextActionModal(true);
+  };
+
+  const handleToggleMilestone = async (milestone: 'showroomVisited' | 'testDriveCompleted') => {
+    if (!lead) return;
+    const currentVal = Boolean(lead.milestones?.[milestone]);
+    const updated = await leadService.toggleMilestone(
+      lead.id,
+      milestone,
+      !currentVal,
+      currentProfile.id,
+      currentProfile.fullName
+    );
+    onLeadUpdated(updated);
+    const refreshed = await leadService.getActivities(lead.id);
+    setActivities(refreshed);
+  };
+
+  const handleSelectTransactionPath = async (route: 'cash' | 'financing') => {
+    if (!lead) return;
+    const status = route === 'cash' ? 'reservation_paid' : 'bank_processing';
+    const updated = await leadService.updateTransactionPath(
+      lead.id,
+      route,
+      status,
+      currentProfile.id,
+      currentProfile.fullName
+    );
+    onLeadUpdated(updated);
+    const refreshed = await leadService.getActivities(lead.id);
+    setActivities(refreshed);
+  };
+
   return (
     <div className="fixed inset-0 m-0 z-40 flex justify-end bg-ink/40 backdrop-blur-sm animate-fade-in overscroll-none touch-none">
       <div className="w-full sm:max-w-lg bg-card border-l border-line h-[100dvh] max-h-[100dvh] flex flex-col shadow-2xl overflow-hidden touch-auto">
@@ -425,6 +516,191 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
                 </div>
               </div>
             </PermissionGate>
+          </div>
+
+          {/* Priority #3: Mandatory Next Action Card */}
+          <div className="bg-paper border border-cobalt/30 rounded-control p-3 space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <Clock className="size-4 text-cobalt shrink-0" />
+                <span className="text-xs font-bold text-ink uppercase tracking-wider">Scheduled Next Action</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowNextActionModal(true)}
+                className="text-xs font-bold text-cobalt hover:underline"
+              >
+                {lead.nextAction ? 'Edit Action' : '+ Set Next Action'}
+              </button>
+            </div>
+            {lead.nextAction ? (
+              <div className="space-y-1 pt-1 border-t border-line/60">
+                <p className="text-xs font-semibold text-ink">{lead.nextAction}</p>
+                <div className="flex items-center justify-between text-[11px] text-sub">
+                  <span>Due: <strong className="text-ink">{lead.nextFollowUpDate || lead.followUpDue || 'No date set'}</strong></span>
+                  <StatusPill status={lead.urgency} />
+                </div>
+              </div>
+            ) : (
+              <p className="text-xs text-overdue font-semibold pt-1 border-t border-line/60">
+                No next action scheduled! Leads without a scheduled follow-up leak from the pipeline.
+              </p>
+            )}
+          </div>
+
+          {/* Priority #5: Contact Cadence & Nurture Stepper */}
+          <div className="bg-paper border border-line rounded-control p-3 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <PhoneCall className="size-4 text-cobalt shrink-0" />
+                <span className="text-xs font-bold text-ink uppercase tracking-wider">Contact Cadence (V1 Priority #5)</span>
+              </div>
+              <span className="text-[11px] font-semibold text-sub">
+                Attempt #{lead.contactAttempts || 0} of 3
+              </span>
+            </div>
+
+            {/* Stepper Indicators */}
+            <div className="grid grid-cols-4 gap-1.5 text-center text-[10px] font-bold">
+              {[1, 2, 3].map((step) => {
+                const isPassed = (lead.contactAttempts || 0) >= step;
+                return (
+                  <div
+                    key={step}
+                    className={`py-1 rounded border ${
+                      isPassed
+                        ? 'bg-cobalt text-white border-cobalt'
+                        : 'bg-wash text-sub border-line'
+                    }`}
+                  >
+                    Attempt {step}
+                  </div>
+                );
+              })}
+              <div
+                className={`py-1 rounded border ${
+                  lead.status === 'nurture'
+                    ? 'bg-amber-600 text-white border-amber-600'
+                    : 'bg-wash text-sub border-line'
+                }`}
+              >
+                Nurture
+              </div>
+            </div>
+
+            {lead.status === 'nurture' ? (
+              <div className="p-2 bg-amber-500/10 border border-amber-500/20 rounded-control flex items-center justify-between">
+                <span className="text-xs font-semibold text-amber-700">In Nurture / Old Leads Pool</span>
+                <button
+                  type="button"
+                  onClick={handleReactivateLead}
+                  className="px-2.5 py-1 text-xs font-bold bg-cobalt hover:bg-cobalt-press text-white rounded-control"
+                >
+                  Reactivate Lead
+                </button>
+              </div>
+            ) : (
+              <div className="flex flex-wrap items-center gap-1.5 pt-1 border-t border-line">
+                <button
+                  type="button"
+                  onClick={() => handleLogContactAttempt('call', 'No answer / Ringing')}
+                  className="px-2 py-1 text-[11px] font-semibold bg-wash border border-line rounded hover:bg-line text-ink"
+                >
+                  Call: No Answer
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleLogContactAttempt('viber', 'Message sent via Viber')}
+                  className="px-2 py-1 text-[11px] font-semibold bg-wash border border-line rounded hover:bg-line text-ink"
+                >
+                  Viber: Sent
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleLogContactAttempt('call', 'Customer answered & qualified')}
+                  className="px-2 py-1 text-[11px] font-semibold bg-wash border border-line rounded hover:bg-line text-ink"
+                >
+                  Call: Connected
+                </button>
+                <button
+                  type="button"
+                  onClick={handleMoveToNurture}
+                  className="ml-auto px-2 py-1 text-[11px] font-semibold text-sub hover:text-overdue hover:bg-overdue/10 rounded border border-line"
+                >
+                  Move to Nurture
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Priority #2: Customer Experience Milestones (Showroom Visit & Test Drive) */}
+          <div className="bg-paper border border-line rounded-control p-3 space-y-2">
+            <span className="text-xs font-bold text-ink uppercase tracking-wider block">Customer Milestones (Non-Linear)</span>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => handleToggleMilestone('showroomVisited')}
+                className={`p-2 rounded-control border text-xs font-bold flex items-center justify-between transition-colors ${
+                  lead.milestones?.showroomVisited
+                    ? 'bg-cobalt-tint text-cobalt border-cobalt/40'
+                    : 'bg-card text-sub border-line hover:border-cobalt'
+                }`}
+              >
+                <span>Showroom Visit</span>
+                <span className="text-[10px]">{lead.milestones?.showroomVisited ? '✓ Completed' : '+ Log Visit'}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleToggleMilestone('testDriveCompleted')}
+                className={`p-2 rounded-control border text-xs font-bold flex items-center justify-between transition-colors ${
+                  lead.milestones?.testDriveCompleted
+                    ? 'bg-teal-50 text-teal-700 border-teal-300'
+                    : 'bg-card text-sub border-line hover:border-teal-500'
+                }`}
+              >
+                <span>Test Drive</span>
+                <span className="text-[10px]">{lead.milestones?.testDriveCompleted ? '✓ Done' : '+ Book / Done'}</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Priority #2: Transaction Route (Cash vs Financing) */}
+          <div className="bg-paper border border-line rounded-control p-3 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-ink uppercase tracking-wider">Transaction Route</span>
+              <span className="text-[11px] font-semibold uppercase text-cobalt">
+                {lead.transactionType === 'cash' ? 'Cash Payment' : 'Bank Financing'}
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => handleSelectTransactionPath('cash')}
+                className={`py-1.5 px-2 rounded-control border text-xs font-bold text-center transition-colors ${
+                  lead.transactionType === 'cash'
+                    ? 'bg-cobalt text-white border-cobalt shadow-xs'
+                    : 'bg-card text-sub border-line hover:bg-wash'
+                }`}
+              >
+                Cash Transaction
+              </button>
+              <button
+                type="button"
+                onClick={() => handleSelectTransactionPath('financing')}
+                className={`py-1.5 px-2 rounded-control border text-xs font-bold text-center transition-colors ${
+                  lead.transactionType !== 'cash'
+                    ? 'bg-cobalt text-white border-cobalt shadow-xs'
+                    : 'bg-card text-sub border-line hover:bg-wash'
+                }`}
+              >
+                Bank Financing
+              </button>
+            </div>
+            <p className="text-[10.5px] text-sub">
+              {lead.transactionType === 'cash'
+                ? 'Cash route: Reservation / Deposit → Full Payment → Unit Released'
+                : 'Financing route: Bank Submission → Underwriting & PO → Unit Released'}
+            </p>
           </div>
 
           {/* Vehicle Stock Allocation & 48-Hour Reservation Card */}
@@ -892,6 +1168,15 @@ export const LeadDetailDrawer: React.FC<LeadDetailDrawerProps> = ({
             });
           }
         }}
+      />
+
+      <NextActionModal
+        isOpen={showNextActionModal}
+        leadName={lead.customerName}
+        currentAction={lead.nextAction}
+        currentDueDate={lead.nextFollowUpDate || lead.followUpDue}
+        onClose={() => setShowNextActionModal(false)}
+        onSave={handleSaveNextAction}
       />
     </div>
   );

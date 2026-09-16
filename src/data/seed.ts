@@ -1,5 +1,6 @@
 import {
   Activity,
+  AgentMatrixRow,
   FollowUp,
   KpiSummary,
   Lead,
@@ -9,13 +10,26 @@ import {
 
 export const STAGES: StageConfig[] = [
   { id: 'new', label: 'New Lead', color: '#8A93A3', order: 1 },
-  { id: 'contacted', label: 'Contacted', color: '#2E7BD6', order: 2 },
-  { id: 'showroom', label: 'Showroom Visit', color: '#1E4FD6', order: 3 },
-  { id: 'test_drive', label: 'Test Drive', color: '#0E7490', order: 4 },
-  { id: 'application', label: 'Financing Application', color: '#E8A013', order: 5 },
-  { id: 'approved', label: 'Bank Approved', color: '#189A5A', order: 6 },
-  { id: 'released', label: 'Unit Released', color: '#0F1826', order: 7 },
+  { id: 'attempting_contact', label: 'Attempting Contact', color: '#64748B', order: 2 },
+  { id: 'contacted', label: 'Contacted', color: '#2E7BD6', order: 3 },
+  { id: 'interested', label: 'Interested / Qualified', color: '#1E4FD6', order: 4 },
+  { id: 'quotation_sent', label: 'Quotation Sent', color: '#0E7490', order: 5 },
+  { id: 'application', label: 'Application / Reservation', color: '#E8A013', order: 6 },
+  { id: 'processing', label: 'Processing', color: '#D97706', order: 7 },
+  { id: 'released', label: 'Unit Released', color: '#189A5A', order: 8 },
 ];
+
+export const LEGACY_STAGES: StageConfig[] = [
+  { id: 'showroom', label: 'Showroom Visit', color: '#1E4FD6', order: 9 },
+  { id: 'test_drive', label: 'Test Drive', color: '#0E7490', order: 10 },
+  { id: 'approved', label: 'Bank Approved', color: '#189A5A', order: 11 },
+];
+
+export const ALL_STAGE_CONFIGS: StageConfig[] = [...STAGES, ...LEGACY_STAGES];
+
+export function getStageConfig(stage: string): StageConfig {
+  return ALL_STAGE_CONFIGS.find((s) => s.id === stage) || STAGES[0];
+}
 
 export const SEED_PROFILES: Profile[] = [
   {
@@ -542,4 +556,67 @@ export function calculateKpis(
     overdueFollowUpsCount,
     dueTodayCount,
   };
+}
+
+/**
+ * Calculate Agent-by-Agent Follow-Up & Pipeline Matrix (Priority #6)
+ */
+export function calculateAgentMatrix(
+  leads: Lead[],
+  profiles: Profile[]
+): AgentMatrixRow[] {
+  const agents = profiles.filter((p) => p.role === 'agent');
+  return agents.map((agent) => {
+    const agentLeads = leads.filter((l) => l.agentId === agent.id);
+
+    // New intake: leads in new or attempting_contact
+    const newCount = agentLeads.filter(
+      (l) => l.stage === 'new' || l.stage === 'attempting_contact'
+    ).length;
+
+    // Not contacted: active leads with 0 contact attempts or no last activity
+    const notContactedCount = agentLeads.filter(
+      (l) => l.status === 'active' && ((l.contactAttempts ?? 0) === 0 || !l.lastActivity)
+    ).length;
+
+    // Due today
+    const dueTodayCount = agentLeads.filter(
+      (l) => l.status === 'active' && l.urgency === 'due_today'
+    ).length;
+
+    // Overdue
+    const overdueCount = agentLeads.filter(
+      (l) => l.status === 'active' && l.urgency === 'overdue'
+    ).length;
+
+    // Interested / Qualified: in interested, quotation_sent, showroom, test_drive, or contacted
+    const interestedCount = agentLeads.filter(
+      (l) =>
+        l.status === 'active' &&
+        ['interested', 'quotation_sent', 'showroom', 'test_drive', 'contacted'].includes(l.stage)
+    ).length;
+
+    // Applications: in application, processing, or approved
+    const applicationsCount = agentLeads.filter((l) =>
+      ['application', 'processing', 'approved'].includes(l.stage)
+    ).length;
+
+    // Released / Won
+    const releasedCount = agentLeads.filter(
+      (l) => l.stage === 'released' || l.status === 'won'
+    ).length;
+
+    return {
+      agentId: agent.id,
+      agentName: agent.fullName,
+      avatarUrl: agent.avatarUrl,
+      newCount,
+      notContactedCount,
+      dueTodayCount,
+      overdueCount,
+      interestedCount,
+      applicationsCount,
+      releasedCount,
+    };
+  });
 }

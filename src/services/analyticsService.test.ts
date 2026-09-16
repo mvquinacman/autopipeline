@@ -3,13 +3,13 @@ import { analyticsService } from './analyticsService';
 import { SEED_LEADS } from '../data/seed';
 
 describe('analyticsService - Funnel & Loss Analytics', () => {
-  it('calculates funnel steps across the 7 stages', () => {
+  it('calculates funnel steps across the 8 stages', () => {
     const summary = analyticsService.calculateFunnelAnalytics(SEED_LEADS);
 
-    expect(summary.funnelSteps).toHaveLength(7);
+    expect(summary.funnelSteps).toHaveLength(8);
     expect(summary.totalLeads).toBe(SEED_LEADS.length);
     expect(summary.funnelSteps[0].stage).toBe('new');
-    expect(summary.funnelSteps[6].stage).toBe('released');
+    expect(summary.funnelSteps[7].stage).toBe('released');
 
     // Stage 0 conversion from previous is 100%
     expect(summary.funnelSteps[0].conversionFromPrev).toBe(100);

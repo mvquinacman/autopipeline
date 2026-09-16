@@ -1,13 +1,17 @@
 export type Stage =
   | 'new'
+  | 'attempting_contact'
   | 'contacted'
+  | 'interested'
+  | 'quotation_sent'
+  | 'application'
+  | 'processing'
+  | 'released'
   | 'showroom'
   | 'test_drive'
-  | 'application'
-  | 'approved'
-  | 'released';
+  | 'approved';
 
-export type LeadStatus = 'active' | 'won' | 'lost';
+export type LeadStatus = 'active' | 'won' | 'lost' | 'nurture';
 
 export type LostReason =
   | 'bought_elsewhere'
@@ -50,6 +54,16 @@ export interface Lead {
   notes?: string;
   followUpDue?: string;
   urgency: Urgency;
+  contactAttempts?: number;
+  lastActivity?: string;
+  nextAction?: string;
+  nextFollowUpDate?: string;
+  transactionType?: 'cash' | 'financing';
+  processingStatus?: 'bank_processing' | 'bank_approved' | 'bank_denied' | 'reservation_paid';
+  milestones?: {
+    showroomVisited?: boolean;
+    testDriveCompleted?: boolean;
+  };
   tradeInId?: string;
   netTradeInEquity?: number;
   allocatedVehicleId?: string;
@@ -65,7 +79,7 @@ export interface Activity {
   leadId: string;
   actorId: string;
   actorName: string;
-  type: 'stage_change' | 'call' | 'note' | 'test_drive' | 'quote' | 'trade_in';
+  type: 'stage_change' | 'call' | 'note' | 'test_drive' | 'quote' | 'trade_in' | 'viber' | 'milestone';
   detail: string;
   createdAt: string;
 }
@@ -104,4 +118,17 @@ export interface StageConfig {
   label: string;
   color: string;
   order: number;
+}
+
+export interface AgentMatrixRow {
+  agentId: string;
+  agentName: string;
+  avatarUrl?: string;
+  newCount: number;
+  notContactedCount: number;
+  dueTodayCount: number;
+  overdueCount: number;
+  interestedCount: number;
+  applicationsCount: number;
+  releasedCount: number;
 }

@@ -18,6 +18,7 @@ const STATUS_MAP: Record<string, StatusConfig> = {
   due_today: { bg: 'bg-due/10', text: 'text-due', defaultLabel: 'Due Today' },
   won: { bg: 'bg-won/10', text: 'text-won', defaultLabel: 'Won' },
   lost: { bg: 'bg-lost/10', text: 'text-lost', defaultLabel: 'Lost' },
+  nurture: { bg: 'bg-amber-500/10', text: 'text-amber-700', defaultLabel: 'Nurture' },
   upcoming: { bg: 'bg-sub/10', text: 'text-sub', defaultLabel: 'Upcoming' },
   active: { bg: 'bg-cobalt/10', text: 'text-cobalt', defaultLabel: 'Active' },
   none: { bg: 'bg-sub/10', text: 'text-sub', defaultLabel: 'Normal' },

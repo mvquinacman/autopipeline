@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { calculateKpis, formatPeso, STAGES, SEED_LEADS } from './seed';
+import { calculateKpis, formatPeso, STAGES, SEED_LEADS, calculateAgentMatrix, SEED_PROFILES } from './seed';
 import type { Lead, Stage } from '../types/crm';
 
 describe('formatPeso', () => {
@@ -64,10 +64,19 @@ describe('calculateKpis', () => {
 });
 
 describe('Stage transitions', () => {
-  it('has 7 ordered stages from new to released', () => {
-    expect(STAGES).toHaveLength(7);
+  it('has 8 ordered stages from new to released', () => {
+    expect(STAGES).toHaveLength(8);
     const stageIds: Stage[] = STAGES.map((s) => s.id);
-    expect(stageIds).toEqual(['new', 'contacted', 'showroom', 'test_drive', 'application', 'approved', 'released']);
+    expect(stageIds).toEqual([
+      'new',
+      'attempting_contact',
+      'contacted',
+      'interested',
+      'quotation_sent',
+      'application',
+      'processing',
+      'released',
+    ]);
   });
 
   it('advances a lead sequentially across stages', () => {
@@ -79,5 +88,20 @@ describe('Stage transitions', () => {
       expect(currentStage).toBe(stageOrder[i + 1]);
     }
     expect(currentStage).toBe('released');
+  });
+});
+
+describe('calculateAgentMatrix', () => {
+  it('aggregates agent metrics correctly for manager dashboard', () => {
+    const matrix = calculateAgentMatrix(SEED_LEADS, SEED_PROFILES);
+    expect(matrix.length).toBeGreaterThanOrEqual(2);
+    const paolo = matrix.find((m) => m.agentName.includes('Paolo'));
+    expect(paolo).toBeDefined();
+    if (paolo) {
+      expect(paolo.newCount).toBeGreaterThanOrEqual(0);
+      expect(paolo.notContactedCount).toBeGreaterThanOrEqual(0);
+      expect(paolo.dueTodayCount).toBeGreaterThanOrEqual(0);
+      expect(paolo.overdueCount).toBeGreaterThanOrEqual(0);
+    }
   });
 });

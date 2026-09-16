@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import type { Lead, Stage } from '../types/crm';
+import type { Lead } from '../types/crm';
 import { STAGES, formatPeso } from '../data/seed';
 import { KanbanCard } from './KanbanCard';
 
@@ -11,21 +11,17 @@ interface KanbanBoardProps {
 
 export function KanbanBoard({ leads, onSelectLead, onAdvanceLead }: KanbanBoardProps) {
   const stageGroups = useMemo(() => {
-    const grouped: Record<Stage, { leads: Lead[]; totalValue: number }> = {
-      new: { leads: [], totalValue: 0 },
-      contacted: { leads: [], totalValue: 0 },
-      showroom: { leads: [], totalValue: 0 },
-      test_drive: { leads: [], totalValue: 0 },
-      application: { leads: [], totalValue: 0 },
-      approved: { leads: [], totalValue: 0 },
-      released: { leads: [], totalValue: 0 },
-    };
+    const grouped: Record<string, { leads: Lead[]; totalValue: number }> = {};
+    for (const stage of STAGES) {
+      grouped[stage.id] = { leads: [], totalValue: 0 };
+    }
 
     for (const lead of leads) {
-      if (grouped[lead.stage]) {
-        grouped[lead.stage].leads.push(lead);
-        grouped[lead.stage].totalValue += lead.estValue;
+      if (!grouped[lead.stage]) {
+        grouped[lead.stage] = { leads: [], totalValue: 0 };
       }
+      grouped[lead.stage].leads.push(lead);
+      grouped[lead.stage].totalValue += lead.estValue;
     }
     return grouped;
   }, [leads]);
@@ -34,7 +30,7 @@ export function KanbanBoard({ leads, onSelectLead, onAdvanceLead }: KanbanBoardP
     <div className="w-full overflow-x-auto pb-4 scrollbar-none snap-x snap-mandatory touch-pan-x">
       <div className="flex gap-3 min-w-[1100px] items-start px-0.5">
         {STAGES.map((cfg) => {
-          const group = stageGroups[cfg.id];
+          const group = stageGroups[cfg.id] || { leads: [], totalValue: 0 };
           return (
             <div
               key={cfg.id}

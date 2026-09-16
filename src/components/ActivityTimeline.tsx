@@ -1,6 +1,6 @@
 import React from 'react';
 import { Activity } from '../types/crm';
-import { ArrowRight, Phone, Car, FileText, CheckCircle2, Repeat } from 'lucide-react';
+import { ArrowRight, Phone, Car, FileText, CheckCircle2, Repeat, MessageSquare, Sparkles } from 'lucide-react';
 
 interface ActivityTimelineProps {
   activities: Activity[];
@@ -41,6 +41,10 @@ export const ActivityTimeline: React.FC<ActivityTimelineProps> = ({
         return <ArrowRight className="size-3.5 text-cobalt" />;
       case 'call':
         return <Phone className="size-3.5 text-due" />;
+      case 'viber':
+        return <MessageSquare className="size-3.5 text-cobalt" />;
+      case 'milestone':
+        return <Sparkles className="size-3.5 text-won" />;
       case 'test_drive':
         return <Car className="size-3.5 text-won" />;
       case 'quote':

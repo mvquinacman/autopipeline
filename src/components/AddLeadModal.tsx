@@ -36,6 +36,10 @@ export const AddLeadModal: React.FC<AddLeadModalProps> = ({
   const [estValue, setEstValue] = useState(VEHICLE_MODELS[0].price);
   const [source, setSource] = useState('walk_in');
   const [notes, setNotes] = useState('');
+  const [nextAction, setNextAction] = useState('Initial contact & vehicle qualification');
+  const [nextFollowUpDate, setNextFollowUpDate] = useState(
+    new Date(Date.now() + 86400000).toISOString().split('T')[0]
+  );
   const [duplicateCheck, setDuplicateCheck] = useState<DuplicateCheckResult>({ isDuplicate: false });
   const [allowOverride, setAllowOverride] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
@@ -82,6 +86,8 @@ export const AddLeadModal: React.FC<AddLeadModalProps> = ({
           estValue,
           source,
           notes: notes.trim() || undefined,
+          nextAction: nextAction.trim() || undefined,
+          nextFollowUpDate: nextFollowUpDate || undefined,
         },
         currentProfile.id,
         currentProfile.fullName
@@ -199,6 +205,34 @@ export const AddLeadModal: React.FC<AddLeadModalProps> = ({
                 </select>
                 <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 size-4 text-sub pointer-events-none" />
               </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block font-semibold text-ink mb-1">
+                Next Action <span className="text-overdue">*</span>
+              </label>
+              <input
+                type="text"
+                required
+                value={nextAction}
+                onChange={(e) => setNextAction(e.target.value)}
+                placeholder="e.g. Call to qualify financing requirements"
+                className="w-full h-10 px-3 rounded-control border border-line bg-paper text-base sm:text-xs text-ink focus:ring-2 focus:ring-cobalt focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="block font-semibold text-ink mb-1">
+                Follow-up Due Date <span className="text-overdue">*</span>
+              </label>
+              <input
+                type="date"
+                required
+                value={nextFollowUpDate}
+                onChange={(e) => setNextFollowUpDate(e.target.value)}
+                className="w-full h-10 px-3 rounded-control border border-line bg-paper text-base sm:text-xs text-ink focus:ring-2 focus:ring-cobalt focus:outline-none"
+              />
             </div>
           </div>
 

@@ -185,7 +185,7 @@ describe('AutoPipeline - End-to-End User Journey Verification', () => {
     expect(screen.getByText('Showroom Deal Tools')).toBeInTheDocument();
   });
 
-  it('Journey 7: Kanban Board renders 7 stage columns with stage totals', async () => {
+  it('Journey 7: Kanban Board renders 8 stage columns with stage totals', async () => {
     render(<App />);
 
     // Switch to Kanban Board
@@ -196,8 +196,9 @@ describe('AutoPipeline - End-to-End User Journey Verification', () => {
     // Verify Kanban board rendered
     expect(await screen.findByText(/Floor Standup Board/i)).toBeInTheDocument();
     expect(screen.getByText('New Lead')).toBeInTheDocument();
-    expect(screen.getByText('Test Drive')).toBeInTheDocument();
-    expect(screen.getByText('Financing Application')).toBeInTheDocument();
+    expect(screen.getByText('Contacted')).toBeInTheDocument();
+    expect(screen.getByText('Application / Reservation')).toBeInTheDocument();
+    expect(screen.getByText('Processing')).toBeInTheDocument();
   });
 
   it('Journey 8: F&I Loan Calculator computes monthly amortization and attaches quote', async () => {
